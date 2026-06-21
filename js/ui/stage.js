@@ -14,6 +14,7 @@ const TERRAIN_COLORS = { 지진: '#d29922', 둔화: '#9aa0a6', 용암: '#f85149'
 const WEAPON_COLORS = ['#ffd33d', '#a371f7']; // 무기 인덱스별 색(0=1번/금, 1=2번/보라)
 
 export class Playback {
+  static MAX_BACKING = 820; // 캔버스 백킹 해상도 상한(px). 큰 창에서 GPU fill-rate 병목 방지.
   constructor({ canvas, controls, hud, scrub }) {
     this.canvas = canvas; this.ctx = canvas.getContext('2d');
     this.controls = controls; this.hud = hud; this.scrub = scrub;
@@ -142,15 +143,20 @@ export class Playback {
   // ── 캔버스 좌표/입력 ────────────────────────────
   resize() {
     const wrap = this.canvas.parentElement;
-    const s = Math.max(200, Math.min(wrap.clientWidth - 2, wrap.clientHeight - 2));
+    const css = Math.max(200, Math.min(wrap.clientWidth - 2, wrap.clientHeight - 2)); // 표시 크기(CSS px)
+    // 백킹 해상도 상한: 창이 커도 GPU가 칠하는 픽셀 수를 묶어 fill-rate 병목 방지.
+    // 표시는 CSS로 업스케일(약간의 블러 < 부드러움). css가 상한 이하면 1:1(블러 없음).
+    const s = Math.min(css, Playback.MAX_BACKING);
     this.canvas.width = s; this.canvas.height = s;
+    this.canvas.style.width = css + 'px'; this.canvas.style.height = css + 'px';
     this.scale = s / this.field; this.cx = s / 2; this.cy = s / 2;
   }
   w2s(x, y) { return [this.cx + x * this.scale, this.cy + y * this.scale]; }
   s2w(sx, sy) { return [(sx - this.cx) / this.scale, (sy - this.cy) / this.scale]; }
   _bindCanvas() {
     let drag = false;
-    const pos = (e) => { const r = this.canvas.getBoundingClientRect(); return this.s2w(e.clientX - r.left, e.clientY - r.top); };
+    // 표시(CSS) px → 백킹 px 보정(백킹 해상도 상한 때문에 둘이 다를 수 있음)
+    const pos = (e) => { const r = this.canvas.getBoundingClientRect(); const k = this.canvas.width / r.width; return this.s2w((e.clientX - r.left) * k, (e.clientY - r.top) * k); };
     const cl = (v) => { const h = this.field / 2; return Math.max(-h, Math.min(h, v)); }; // 유저도 맵 안으로
     this.canvas.addEventListener('mousedown', (e) => {
       const [wx, wy] = pos(e);
@@ -261,6 +267,9 @@ export class Playback {
     this._last = performance.now();
     const tick = (now) => {
       if (!this.playing) return;
+      // ── 계측: rAF 간격(frame) / sim / render ms (EMA). _perf로 HUD 표시 ──
+      const frameMs = this._perfLast ? now - this._perfLast : 16.7; this._perfLast = now;
+      const wt0 = performance.now();
       const dt = Math.min(0.05, (now - this._last) / 1000) * this.speed; this._last = now;
       this._clock += dt;
       this._hist.push({ t: this._clock, x: this.user.x, y: this.user.y }); // 전역 시각 기준 유저 기록
@@ -289,7 +298,15 @@ export class Playback {
         this._stepBt(dt);
         if (this.userAI) this._stepUserAI(dt, this.bt.state, this.bt.cur, this.bt.localT);
       }
+      const wt1 = performance.now();
       this.render();
+      const wt2 = performance.now();
+      // EMA(0.1) 누적
+      const p = this._perf || (this._perf = { frame: 16.7, sim: 0, render: 0, work: 0 });
+      p.frame += (frameMs - p.frame) * 0.1;
+      p.sim += ((wt1 - wt0) - p.sim) * 0.1;
+      p.render += ((wt2 - wt1) - p.render) * 0.1;
+      p.work += ((wt2 - wt0) - p.work) * 0.1;
       this._raf = requestAnimationFrame(tick);
     };
     this._raf = requestAnimationFrame(tick);
@@ -462,7 +479,7 @@ export class Playback {
     this._notes(state, noteCount);
     this._user();
     this._hud(state, activeType, patt);
-    this._refreshControls();
+    // _refreshControls()는 상태 변경 핸들러에서만 호출(매 프레임 DOM 쓰기 제거).
   }
   // 보스 머리 위 음표 카운터(왼→오 정렬, NOTE_MAX 도달 시 강조)
   _notes(st, count) {
@@ -658,6 +675,8 @@ export class Playback {
   }
   _hud(st, activeType, patt) {
     if (!this.hud) return;
+    // 재생 중엔 HUD 텍스트를 ~15Hz로만 갱신(innerHTML 재파싱=레이아웃/페인트 비용 분리). 캔버스는 60Hz 유지.
+    if (this.playing) { const now = performance.now(); if (now - (this._hudLast || 0) < 66) return; this._hudLast = now; }
     const u = this._userAt(this._clock);
     const d = Math.hypot(st.mx - u.x, st.my - u.y).toFixed(1);
     const col = TYPE_COLORS[activeType] || '#8b949e';
@@ -669,7 +688,8 @@ export class Playback {
       ${activeType ? `<span style="color:${col}">● ${activeType}</span>` : ''}
       ${this.mode === 'bt' ? `<span>모드 <b>${this.bt?.mode || '-'}</b></span>` : ''}
       ${this.mode === 'bt' && this._hasDual ? `<span>무기 <b>${esc(this._weaponName())}</b></span>` : ''}
-      ${this._usesNotes ? `<span>음표 <b style="color:${(this._noteShown || 0) >= sim.NOTE_MAX ? '#ffd33d' : '#c9a227'}">${this._noteShown || 0}</b>/${sim.NOTE_MAX}</span>` : ''}`;
+      ${this._usesNotes ? `<span>음표 <b style="color:${(this._noteShown || 0) >= sim.NOTE_MAX ? '#ffd33d' : '#c9a227'}">${this._noteShown || 0}</b>/${sim.NOTE_MAX}</span>` : ''}
+      ${this.playing && this._perf ? `<span style="color:${this._perf.frame > 20 ? '#f85149' : '#3fb950'}">⚡ ${(1000 / this._perf.frame).toFixed(0)}fps · 작업${this._perf.work.toFixed(1)}ms (sim${this._perf.sim.toFixed(1)}/그림${this._perf.render.toFixed(1)})</span>` : ''}`;
   }
 }
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
