@@ -1,0 +1,550 @@
+{
+  "schema": 1,
+  "id": "boss_cheongu",
+  "name": "천구 (개)",
+  "kind": "boss",
+  "hp": 12800,
+  "size": 1.2,
+  "rotationSpeed": 360,
+  "description": "",
+  "distanceBands": [
+    {
+      "name": "초근거리",
+      "min": 0,
+      "max": 2
+    },
+    {
+      "name": "근거리",
+      "min": 2,
+      "max": 5
+    },
+    {
+      "name": "중거리",
+      "min": 5,
+      "max": 10
+    },
+    {
+      "name": "장거리",
+      "min": 10,
+      "max": 18
+    },
+    {
+      "name": "초장거리",
+      "min": 18,
+      "max": 99
+    }
+  ],
+  "phases": [
+    {
+      "name": "1P 흰개",
+      "hp": 3200,
+      "transitionPatternId": null
+    },
+    {
+      "name": "2P 검은개",
+      "hp": 9600,
+      "transitionPatternId": "eclipse"
+    }
+  ],
+  "patterns": [
+    {
+      "id": "sidewalk",
+      "name": "Move_SideWalk",
+      "duration": 0.7,
+      "cooldown": 0,
+      "events": [
+        {
+          "id": "f46f6dc1-c81d-4c3a-9f2f-6dba062f8c8f",
+          "time": 0.7,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "왼쪽",
+          "dist": 3,
+          "track": false,
+          "customPath": null
+        }
+      ]
+    },
+    {
+      "id": "sidedash",
+      "name": "Move_SideDash",
+      "duration": 0.4,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "0b3799d9-4b17-4a90-892b-969486bb9436",
+          "time": 0.4,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "왼쪽",
+          "dist": 5,
+          "track": false,
+          "customPath": null
+        }
+      ]
+    },
+    {
+      "id": "backdash",
+      "name": "Move_BackDash",
+      "duration": 0.4,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "8e50efb4-0ce1-45ac-ab38-d7247ac7b0d0",
+          "time": 0.4,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "후퇴",
+          "dist": 6,
+          "track": false,
+          "customPath": null
+        }
+      ]
+    },
+    {
+      "id": "claw1",
+      "name": "Claw1 할퀴기",
+      "duration": 0.7,
+      "cooldown": 0.4,
+      "events": [
+        {
+          "id": "7c49cc87-8c79-402d-899b-b4d0117af8b0",
+          "time": 0.24,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "7ea1c216-f8e2-40fd-affa-cc081eb39a5b",
+          "time": 0.49,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 4.5,
+          "side": false
+        },
+        {
+          "id": "11da34d7-ff2c-4ff8-9577-774b5873ca46",
+          "time": 0.7,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.24,
+          "damage": 100,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 3.5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "claw2",
+      "name": "Claw2 할퀴기",
+      "duration": 0.7,
+      "cooldown": 0.4,
+      "events": [
+        {
+          "id": "7c5f7db9-18be-4c8b-8809-117b8c37bf20",
+          "time": 0.24,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "783dad09-7dce-436b-acdb-4a1f58f4337a",
+          "time": 0.49,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 4.5,
+          "side": false
+        },
+        {
+          "id": "01b85259-e8ae-485b-a7d9-0b10ac52dd61",
+          "time": 0.7,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.24,
+          "damage": 100,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 3.5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "bite",
+      "name": "Bite 물기",
+      "duration": 0.8,
+      "cooldown": 2,
+      "events": [
+        {
+          "id": "8345814b-aff9-4db3-b989-39ae8ed2b778",
+          "time": 0.28,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "150ff1bc-0396-4495-9df4-9e6629e51c18",
+          "time": 0.56,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 4.5,
+          "side": false
+        },
+        {
+          "id": "bdc091aa-4943-4566-b58e-b2e37e5a84ba",
+          "time": 0.8,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.28,
+          "damage": 160,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 3,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "jumpbite",
+      "name": "Jump_Bite 점프물기",
+      "duration": 1.2,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "7c2a8d6f-5ade-4e87-b224-7aa9f72c8336",
+          "time": 0.42,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "16c22035-8e8c-47bc-b09d-98dd72035081",
+          "time": 0.84,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 10,
+          "side": false
+        },
+        {
+          "id": "56e18b87-41e3-44d9-b014-de7013e8a646",
+          "time": 1.2,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.42,
+          "damage": 140,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "lbeam",
+      "name": "Lunar Beam 루나빔",
+      "duration": 1.5,
+      "cooldown": 4,
+      "events": [
+        {
+          "id": "a4c9d5a0-9cf8-49e4-ab28-9e2ffb0549e6",
+          "time": 0.52,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "5a6001b4-2dac-4209-a173-f469ad3b9b53",
+          "time": 1.5,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.52,
+          "damage": 130,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 15,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "lfall",
+      "name": "Lunar Fall 루나폴",
+      "duration": 2,
+      "cooldown": 5,
+      "events": [
+        {
+          "id": "0b29b1c0-b1b7-440d-b389-bd3f9d1ff5d4",
+          "time": 0.7,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "cb9745c3-5ffa-411b-b9e3-f5272ca068d5",
+          "time": 2,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.7,
+          "damage": 160,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 15,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "lbeamP",
+      "name": "Lunar Beam+ 루나빔+",
+      "duration": 2,
+      "cooldown": 8,
+      "events": [
+        {
+          "id": "48d01fe3-cb65-4497-8cef-f4c8389ca623",
+          "time": 0.7,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "292d336b-7e81-456c-9574-4440965b4175",
+          "time": 2,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.7,
+          "damage": 260,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 15,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "lfallP",
+      "name": "Lunar Fall+ 루나폴+",
+      "duration": 3,
+      "cooldown": 12,
+      "events": [
+        {
+          "id": "cd27cd2e-1235-425b-9c9b-f4a2897f22c8",
+          "time": 1.05,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "3f229a22-4e79-49dd-a4a5-6a9e9f5f6db4",
+          "time": 3,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 1.05,
+          "damage": 220,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 15,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "eclipse",
+      "name": "Eclipse 일식",
+      "duration": 7,
+      "cooldown": 999,
+      "events": [
+        {
+          "id": "9c84e399-23e0-4d2e-9189-3607ba8d9b66",
+          "time": 2.45,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "a15490e3-8ca9-44ee-8893-b0d3c15f1d44",
+          "time": 7,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 2.45,
+          "damage": 2000,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 99,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    }
+  ],
+  "bt": [
+    {
+      "id": "bt-lgwnv6t",
+      "mode": "특수",
+      "phaseIdx": 1,
+      "band": -1,
+      "patternId": "eclipse",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "HP<10% · 1회"
+    },
+    {
+      "id": "bt-0lufdxo",
+      "mode": "공격",
+      "phaseIdx": 1,
+      "band": 3,
+      "patternId": "lfallP",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 3~15m · 확률 40%"
+    },
+    {
+      "id": "bt-vsym4dw",
+      "mode": "공격",
+      "phaseIdx": 1,
+      "band": 3,
+      "patternId": "lbeamP",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 3~15m · 확률 40%"
+    },
+    {
+      "id": "bt-e66h8vp",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 3,
+      "patternId": "lfall",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 3~15m · 확률 50%"
+    },
+    {
+      "id": "bt-ugcdfhv",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 3,
+      "patternId": "lbeam",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 3~15m · 확률 60%"
+    },
+    {
+      "id": "bt-xl39fcv",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "claw1",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 0~3.5m · 확률 60%"
+    },
+    {
+      "id": "bt-28op6pc",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "claw2",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 0~3.5m · 확률 70%"
+    },
+    {
+      "id": "bt-3kdwgjw",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "bite",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 0~3.2m"
+    },
+    {
+      "id": "bt-3p4lluc",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 3,
+      "patternId": "jumpbite",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 5~15m · 확률 50%"
+    },
+    {
+      "id": "bt-wiak89a",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "sidewalk",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 0~4m"
+    },
+    {
+      "id": "bt-m3ehjcu",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "backdash",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 0~3m"
+    },
+    {
+      "id": "bt-n4hzv1n",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "jumpbite",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 5~99m"
+    }
+  ],
+  "specialModePatternIds": [
+    "eclipse"
+  ],
+  "projectiles": [],
+  "terrains": []
+}

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "id": "751000f8-d2e9-48ba-a3ca-f1c4745ef218",
+  "name": "새 보스",
+  "kind": "boss",
+  "size": 0.6,
+  "rotationSpeed": 360,
+  "distanceBands": [
+    {
+      "name": "근거리",
+      "max": 3
+    },
+    {
+      "name": "중거리",
+      "max": 8
+    },
+    {
+      "name": "장거리",
+      "max": 99
+    }
+  ],
+  "phases": [
+    {
+      "name": "기본",
+      "hp": 1000,
+      "transitionPatternId": null
+    }
+  ],
+  "patterns": [],
+  "bt": [],
+  "description": "",
+  "specialModePatternIds": []
+}

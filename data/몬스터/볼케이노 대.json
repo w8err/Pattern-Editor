@@ -1,0 +1,249 @@
+{
+  "schema": 1,
+  "id": "volcano_large",
+  "name": "볼케이노 대",
+  "kind": "monster",
+  "hp": 2200,
+  "size": 1.1,
+  "rotationSpeed": 360,
+  "description": "",
+  "distanceBands": [
+    {
+      "name": "초근거리",
+      "min": 0,
+      "max": 2
+    },
+    {
+      "name": "근거리",
+      "min": 2,
+      "max": 5
+    },
+    {
+      "name": "중거리",
+      "min": 5,
+      "max": 10
+    },
+    {
+      "name": "장거리",
+      "min": 10,
+      "max": 18
+    },
+    {
+      "name": "초장거리",
+      "min": 18,
+      "max": 99
+    }
+  ],
+  "phases": [
+    {
+      "name": "일반",
+      "hp": 2200,
+      "transitionPatternId": null
+    }
+  ],
+  "patterns": [
+    {
+      "id": "claw",
+      "name": "할퀴기(후딜김)",
+      "duration": 1.1,
+      "cooldown": 1.5,
+      "events": [
+        {
+          "id": "10b426c7-2956-46c3-a61f-ab359166c946",
+          "time": 0.39,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "47a2df3d-4d03-4755-9263-512cd80fc287",
+          "time": 0.77,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 4,
+          "side": false
+        },
+        {
+          "id": "d152d32d-9adf-4ffa-b2ad-7ec9554df18d",
+          "time": 1.1,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.39,
+          "damage": 110,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 3,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "slam",
+      "name": "내려찍기",
+      "duration": 1.2,
+      "cooldown": 2,
+      "events": [
+        {
+          "id": "5e0be37c-99db-4938-a395-d7c1827c4e1d",
+          "time": 0.42,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "f4a725c4-ed21-4937-bcde-c03f6419d97b",
+          "time": 0.84,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 4,
+          "side": false
+        },
+        {
+          "id": "cf21fd3a-f775-4398-b84b-eb7c1892ec33",
+          "time": 1.2,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.42,
+          "damage": 130,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 2.5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "lavaburst",
+      "name": "용암 방출(보호막비례)",
+      "duration": 1.2,
+      "cooldown": 99,
+      "events": [
+        {
+          "id": "622b1989-b704-43fa-b96b-59313c8656c5",
+          "time": 0.42,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "dff1d09b-3465-4d7a-853a-7662ed9ed45e",
+          "time": 1.2,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.42,
+          "damage": 300,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "walk",
+      "name": "걷기",
+      "duration": 0.7,
+      "cooldown": 0,
+      "events": [
+        {
+          "id": "1f5c45f4-473f-4c14-8ab1-8262b4a448f2",
+          "time": 0.7,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 4,
+          "side": false
+        }
+      ]
+    },
+    {
+      "id": "selfdestruct",
+      "name": "자폭(체력10%↓)",
+      "duration": 2,
+      "cooldown": 999,
+      "events": [
+        {
+          "id": "8ea922ee-8034-4e69-a0b7-3778e3996118",
+          "time": 0.7,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "53105d2b-f98b-4b8b-a355-09d2dfe30c27",
+          "time": 2,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.7,
+          "damage": 800,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 5.5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    }
+  ],
+  "bt": [
+    {
+      "id": "bt-8mwcmfs",
+      "mode": "특수",
+      "phaseIdx": -1,
+      "band": -1,
+      "patternId": "selfdestruct",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "HP<10% · 1회"
+    },
+    {
+      "id": "bt-cs92fja",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "claw",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 0~3m · 확률 60%"
+    },
+    {
+      "id": "bt-x5w5uvc",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "slam",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 0~3m"
+    },
+    {
+      "id": "bt-2ynm134",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "walk",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "거리 3~99m"
+    }
+  ],
+  "projectiles": [],
+  "terrains": []
+}

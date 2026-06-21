@@ -1,0 +1,905 @@
+{
+  "schema": 1,
+  "id": "boss_ahyeon",
+  "name": "아현 (양)",
+  "kind": "boss",
+  "hp": 3000,
+  "size": 0.9,
+  "rotationSpeed": 360,
+  "description": "음표 카운터 보스. 대금(첫 무기)/해금 두 무기, 무기마다 BT가 다르다. 공격 패턴이 음표를 1개씩 쌓고, 5개가 되면 특수 패턴이 강제 발동(5 소모) 후 무기를 자동 교체한다. 대금 특수=휘모리(전방위 탄막), 해금 특수=진양조(회복). 해금은 대금과 거의 같되 공격 시 추적음표를 추가로 발사.",
+  "weaponNames": [
+    "대금",
+    "해금"
+  ],
+  "distanceBands": [
+    {
+      "name": "근거리",
+      "min": 0,
+      "max": 5
+    },
+    {
+      "name": "중거리",
+      "min": 5,
+      "max": 10
+    },
+    {
+      "name": "장거리",
+      "min": 10,
+      "max": 15
+    },
+    {
+      "name": "초장거리",
+      "min": 15,
+      "max": 99
+    },
+    {
+      "name": "근~중거리",
+      "min": 0,
+      "max": 10
+    },
+    {
+      "name": "중~장거리",
+      "min": 5,
+      "max": 15
+    },
+    {
+      "name": "장~초장거리",
+      "min": 10,
+      "max": 9999
+    }
+  ],
+  "phases": [
+    {
+      "name": "아현",
+      "hp": 5000,
+      "transitionPatternId": null
+    }
+  ],
+  "projectiles": [
+    {
+      "id": "note_proj",
+      "name": "음표 투사체",
+      "damage": 30,
+      "speed": 8,
+      "lifetime": 1.8,
+      "homing": 0
+    },
+    {
+      "id": "track_note",
+      "name": "추적음표 투사체",
+      "damage": 30,
+      "speed": 12,
+      "lifetime": 1.8,
+      "homing": 50
+    }
+  ],
+  "terrains": [],
+  "patterns": [
+    {
+      "id": "sinseon",
+      "name": "신선걸음",
+      "duration": 1.2,
+      "cooldown": 2,
+      "events": [
+        {
+          "id": "ss-f",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "ss-w",
+          "time": 0.7,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "ss-d",
+          "time": 1.2,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "좌우",
+          "dist": 6,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null
+        }
+      ]
+    },
+    {
+      "id": "teleport",
+      "name": "순간이동",
+      "duration": 1.5,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "tp-f",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "tp-w",
+          "time": 0.7,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "tp-t",
+          "time": 1,
+          "type": "순간이동",
+          "composite": false,
+          "sub": [],
+          "dest": "유저로부터 랜덤",
+          "dist": 7
+        }
+      ]
+    },
+    {
+      "id": "jungmori",
+      "name": "중모리",
+      "duration": 2.5,
+      "cooldown": 1,
+      "repeat": null,
+      "events": [
+        {
+          "id": "jm-w",
+          "time": 0.5,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jm-v1",
+          "time": 0.7,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "note_proj",
+          "count": 3,
+          "interval": 0,
+          "dir": "랜덤360",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "jm-v2",
+          "time": 1.1,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "note_proj",
+          "count": 3,
+          "interval": 0,
+          "dir": "랜덤360",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "jm-v3",
+          "time": 1.5,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "note_proj",
+          "count": 3,
+          "interval": 0,
+          "dir": "랜덤360",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "jm-n",
+          "time": 1.8,
+          "type": "음표카운터",
+          "composite": false,
+          "sub": [],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "jungjung",
+      "name": "중중모리",
+      "duration": 2.3,
+      "cooldown": 2,
+      "repeat": {
+        "segEnd": 1.5,
+        "max": 3,
+        "maxBand": 2
+      },
+      "events": [
+        {
+          "id": "jj-w",
+          "time": 0.5,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jj-mv",
+          "time": 1.5,
+          "type": "대쉬",
+          "composite": true,
+          "dir": "뒤곡선",
+          "dist": 5,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "sub": [
+            {
+              "id": "jj-p1",
+              "time": 0.8,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "note_proj",
+              "count": 1,
+              "interval": 0,
+              "dir": "유저조준",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            },
+            {
+              "id": "jj-p2",
+              "time": 1,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "note_proj",
+              "count": 1,
+              "interval": 0,
+              "dir": "유저조준",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            },
+            {
+              "id": "jj-p3",
+              "time": 1.2,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "note_proj",
+              "count": 1,
+              "interval": 0,
+              "dir": "유저조준",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            }
+          ]
+        },
+        {
+          "id": "jj-n",
+          "time": 1.8,
+          "type": "음표카운터",
+          "composite": false,
+          "sub": [],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "jajin",
+      "name": "자진모리",
+      "duration": 2.5,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "jz-f",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jz-c",
+          "time": 0.7,
+          "type": "공격각도",
+          "composite": false,
+          "sub": [],
+          "angle": 90
+        },
+        {
+          "id": "jz-w1",
+          "time": 0.9,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jz-b",
+          "time": 1.9,
+          "type": "대기",
+          "composite": true,
+          "sub": [
+            {
+              "id": "jz-s",
+              "time": 1.9,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "note_proj",
+              "count": 10,
+              "interval": 0.1,
+              "dir": "공격각도내 랜덤",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            }
+          ]
+        },
+        {
+          "id": "jz-w2",
+          "time": 2.5,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        }
+      ]
+    },
+    {
+      "id": "himori",
+      "name": "휘모리",
+      "duration": 1.5,
+      "cooldown": 0,
+      "events": [
+        {
+          "id": "hm-use",
+          "time": 0.5,
+          "type": "음표카운터",
+          "composite": false,
+          "sub": [],
+          "amount": -5
+        },
+        {
+          "id": "hm-burst",
+          "time": 1,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "note_proj",
+          "count": 12,
+          "interval": 0,
+          "dir": "균일360",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        }
+      ]
+    },
+    {
+      "id": "jungmori_h",
+      "name": "중모리, 해금",
+      "duration": 1.8,
+      "cooldown": 1,
+      "repeat": null,
+      "events": [
+        {
+          "id": "jmh-w",
+          "time": 0.5,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jmh-v1",
+          "time": 0.7,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "note_proj",
+          "count": 3,
+          "interval": 0,
+          "dir": "랜덤360",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "jmh-t1",
+          "time": 0.7,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "track_note",
+          "count": 2,
+          "interval": 0,
+          "dir": "유저조준",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "jmh-v2",
+          "time": 1.1,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "note_proj",
+          "count": 3,
+          "interval": 0,
+          "dir": "랜덤360",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "jmh-t2",
+          "time": 1.1,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "track_note",
+          "count": 2,
+          "interval": 0,
+          "dir": "유저조준",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "jmh-v3",
+          "time": 1.5,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "note_proj",
+          "count": 3,
+          "interval": 0,
+          "dir": "랜덤360",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "jmh-t3",
+          "time": 1.5,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "track_note",
+          "count": 2,
+          "interval": 0,
+          "dir": "유저조준",
+          "customSpawns": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "jmh-n",
+          "time": 1.8,
+          "type": "음표카운터",
+          "composite": false,
+          "sub": [],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "jungjung_h",
+      "name": "중중모리, 해금",
+      "duration": 1.8,
+      "cooldown": 2,
+      "repeat": {
+        "segEnd": 1.5,
+        "max": 3,
+        "maxBand": 2
+      },
+      "events": [
+        {
+          "id": "jjh-w",
+          "time": 0.5,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jjh-mv",
+          "time": 1.5,
+          "type": "대쉬",
+          "composite": true,
+          "dir": "뒤곡선",
+          "dist": 5,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "sub": [
+            {
+              "id": "jjh-p1",
+              "time": 0.8,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "note_proj",
+              "count": 1,
+              "interval": 0,
+              "dir": "유저조준",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            },
+            {
+              "id": "jjh-q1",
+              "time": 0.8,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "track_note",
+              "count": 1,
+              "interval": 0,
+              "dir": "유저조준",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            },
+            {
+              "id": "jjh-p2",
+              "time": 1,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "note_proj",
+              "count": 1,
+              "interval": 0,
+              "dir": "유저조준",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            },
+            {
+              "id": "jjh-q2",
+              "time": 1,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "track_note",
+              "count": 1,
+              "interval": 0,
+              "dir": "유저조준",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            },
+            {
+              "id": "jjh-p3",
+              "time": 1.2,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "note_proj",
+              "count": 1,
+              "interval": 0,
+              "dir": "유저조준",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            },
+            {
+              "id": "jjh-q3",
+              "time": 1.2,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "track_note",
+              "count": 1,
+              "interval": 0,
+              "dir": "유저조준",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            }
+          ]
+        },
+        {
+          "id": "jjh-n",
+          "time": 1.8,
+          "type": "음표카운터",
+          "composite": false,
+          "sub": [],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "jajin_h",
+      "name": "자진모리, 해금",
+      "duration": 2.5,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "jzh-f",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jzh-c",
+          "time": 0.7,
+          "type": "공격각도",
+          "composite": false,
+          "sub": [],
+          "angle": 90
+        },
+        {
+          "id": "jzh-w1",
+          "time": 0.9,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jzh-b",
+          "time": 1.9,
+          "type": "대기",
+          "composite": true,
+          "sub": [
+            {
+              "id": "jzh-s",
+              "time": 1.9,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "track_note",
+              "count": 10,
+              "interval": 0.1,
+              "dir": "공격각도내 랜덤",
+              "customSpawns": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            }
+          ]
+        },
+        {
+          "id": "jzh-w2",
+          "time": 2.5,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        }
+      ]
+    },
+    {
+      "id": "jinyangjo",
+      "name": "진양조",
+      "duration": 3,
+      "cooldown": 0,
+      "events": [
+        {
+          "id": "jy-use",
+          "time": 0.5,
+          "type": "음표카운터",
+          "composite": false,
+          "sub": [],
+          "amount": -5
+        },
+        {
+          "id": "jy-heal",
+          "time": 2.1,
+          "type": "회복",
+          "composite": false,
+          "sub": [],
+          "amount": 500
+        },
+        {
+          "id": "jy-end",
+          "time": 3,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "f29a6726-061e-4913-a122-df245b556b67",
+          "time": 1.04,
+          "type": "회복",
+          "composite": false,
+          "sub": [],
+          "amount": 500
+        },
+        {
+          "id": "c2570903-d986-4c5f-a78e-291a364e0d26",
+          "time": 1.6,
+          "type": "회복",
+          "composite": false,
+          "sub": [],
+          "amount": 500
+        }
+      ]
+    },
+    {
+      "id": "9857b3ad-0c59-4189-ad5b-0ecccdb9dcc0",
+      "name": "모드 전환",
+      "duration": 1,
+      "cooldown": 1,
+      "events": [
+        {
+          "id": "3f5d095f-387f-4580-846a-af1f1dada4d8",
+          "time": 0.5,
+          "type": "모드전환",
+          "composite": false,
+          "sub": [],
+          "toMode": "토글"
+        }
+      ]
+    }
+  ],
+  "bt": [
+    {
+      "id": "f0bd1683-e8fe-4360-b1fc-94f09b6edd59",
+      "mode": "특수",
+      "phaseIdx": -1,
+      "band": -1,
+      "patternId": "himori",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "음표 5 → 강제 발동·소모 → 해금 교체"
+    },
+    {
+      "id": "bt-d-tp",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "teleport",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "순간이동(공유·전 거리)"
+    },
+    {
+      "id": "bt-d-1",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "sinseon",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "근거리 좌우대쉬(공유)"
+    },
+    {
+      "id": "c393c019-f8d0-4f18-b5ac-d073d65ec294",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 6,
+      "patternId": "teleport",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "bt-d-2",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "jungmori",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "근거리 360° 음표"
+    },
+    {
+      "id": "bt-d-3",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "jungjung",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "중거리 뒤곡선+음표(반복)"
+    },
+    {
+      "id": "bt-d-4",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 6,
+      "patternId": "jajin",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "장거리 부채꼴 10발"
+    },
+    {
+      "id": "41efe404-91c8-47fd-b981-7ca6cb570737",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 6,
+      "patternId": "9857b3ad-0c59-4189-ad5b-0ecccdb9dcc0",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    }
+  ],
+  "bt2": [
+    {
+      "id": "bt-h-sp",
+      "mode": "특수",
+      "phaseIdx": -1,
+      "band": -1,
+      "patternId": "jinyangjo",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "음표 5 → 강제 발동(0.5s 5소모) → 2.5s 회복 → 종료(3.0s) 대금 교체"
+    },
+    {
+      "id": "bt-h-1",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "sinseon",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "근거리 좌우대쉬(공유)"
+    },
+    {
+      "id": "b48965f0-9908-437c-946a-85b2df212f55",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "teleport",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "cb9e991f-8f46-4415-8e2f-0ac50a2f302e",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 6,
+      "patternId": "teleport",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "bt-h-2",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "jungmori_h",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "근거리 음표+추적2"
+    },
+    {
+      "id": "bt-h-3",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 4,
+      "patternId": "jungjung_h",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "중거리 뒤곡선+음표·추적(반복)"
+    },
+    {
+      "id": "bt-h-4",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 6,
+      "patternId": "jajin_h",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "장거리 부채꼴 추적음표 10발"
+    },
+    {
+      "id": "bt-h-5",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 6,
+      "patternId": "9857b3ad-0c59-4189-ad5b-0ecccdb9dcc0",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "초장거리 음표+추적 견제"
+    }
+  ],
+  "specialModePatternIds": [
+    "himori",
+    "jinyangjo"
+  ]
+}

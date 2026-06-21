@@ -1,0 +1,389 @@
+{
+  "schema": 1,
+  "id": "yoowoong_large",
+  "name": "유웅 대",
+  "kind": "monster",
+  "hp": 1800,
+  "size": 0.95,
+  "rotationSpeed": 360,
+  "description": "화산 대형. 둔화 지형 강타형(슬램/점프슬램).",
+  "distanceBands": [
+    {
+      "name": "근거리",
+      "min": 0,
+      "max": 3.5
+    },
+    {
+      "name": "중거리",
+      "min": 3.5,
+      "max": 7
+    },
+    {
+      "name": "장거리",
+      "min": 7,
+      "max": 99
+    }
+  ],
+  "phases": [
+    {
+      "name": "일반",
+      "hp": 1800,
+      "transitionPatternId": null
+    }
+  ],
+  "patterns": [
+    {
+      "id": "slam",
+      "name": "슬램",
+      "duration": 1.4,
+      "cooldown": 4,
+      "events": [
+        {
+          "id": "dbc6efdf-2041-4803-a1b2-e1ab287f6c84",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "5e2bebb4-e496-43b0-a69e-b9d843fd3a57",
+          "time": 0.7,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "d4979868-ffaa-4ebd-9893-74cf4a7d5aa0",
+          "time": 1.1,
+          "type": "공격",
+          "composite": true,
+          "sub": [
+            {
+              "id": "ec2eb8c6-6c6c-4e59-a516-45e35bdb28ca",
+              "time": 1.1,
+              "type": "지형",
+              "composite": false,
+              "sub": [],
+              "count": 1,
+              "pos": "몬스터 위치",
+              "offset": 1,
+              "defId": "cdb57f40-3f0b-4804-941a-67a4a9bd4b99"
+            }
+          ],
+          "indicator": true,
+          "indicatorTime": 0.3,
+          "damage": 100,
+          "shape": "원형",
+          "area": "지름",
+          "offset": 1,
+          "sizeA": 4,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "jumpslam",
+      "name": "점프 슬램",
+      "duration": 1.5,
+      "cooldown": 5,
+      "events": [
+        {
+          "id": "5659db86-5497-45a9-8473-be014f3580d2",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "bca9a7ac-d5eb-4929-a8dc-53c3a3e2bada",
+          "time": 1,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "직선",
+          "dist": 6,
+          "track": false,
+          "customPath": null
+        },
+        {
+          "id": "657f3c61-0822-4154-be56-52c438108ee6",
+          "time": 1.2,
+          "type": "공격",
+          "composite": true,
+          "sub": [
+            {
+              "id": "8c13af03-daad-461e-82a1-70fe7a928f9d",
+              "time": 1.2,
+              "type": "지형",
+              "composite": false,
+              "sub": [],
+              "count": 1,
+              "pos": "몬스터 위치",
+              "offset": 1,
+              "defId": "cdb57f40-3f0b-4804-941a-67a4a9bd4b99"
+            }
+          ],
+          "indicator": true,
+          "indicatorTime": 0.3,
+          "damage": 120,
+          "shape": "원형",
+          "area": "지름",
+          "offset": 1,
+          "sizeA": 4,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "sweep",
+      "name": "스윕",
+      "duration": 3,
+      "cooldown": 1,
+      "events": [
+        {
+          "id": "bc5a7a0c-d18c-43d9-810d-1154a86ea101",
+          "time": 0.3,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "df939b81-3005-40c7-a57a-6402c3572cab",
+          "time": 0.5,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 5,
+          "side": false
+        },
+        {
+          "id": "69efc508-1a2f-45d3-9c27-431482dbed0c",
+          "time": 0.5,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": false,
+          "indicatorTime": 0.5,
+          "damage": 40,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 2.5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        },
+        {
+          "id": "82926d50-c787-41eb-9084-7e01230addc7",
+          "time": 1.3,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "117e79a0-382b-49cd-94d0-3a458fafe8cf",
+          "time": 1.5,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 5,
+          "side": false
+        },
+        {
+          "id": "cd8c8747-e80e-48eb-b259-d6445dcdff8d",
+          "time": 1.5,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": false,
+          "indicatorTime": 0.5,
+          "damage": 40,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "sizeA": 2.5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "sidewalk",
+      "name": "좌우걷기",
+      "duration": 0.6,
+      "cooldown": 0,
+      "events": [
+        {
+          "id": "d962faea-c4ca-41c6-804d-fef7c1ca16cf",
+          "time": 0.6,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 4,
+          "side": true
+        }
+      ]
+    },
+    {
+      "id": "frontdash",
+      "name": "앞대쉬",
+      "duration": 1,
+      "cooldown": 2,
+      "events": [
+        {
+          "id": "b8997fe4-29be-4df8-8298-86c99496b954",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "34078317-e3a1-4ab8-b9de-63454dbaf4f9",
+          "time": 1,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "직선",
+          "dist": 5,
+          "track": false,
+          "customPath": null
+        }
+      ]
+    },
+    {
+      "id": "backdash",
+      "name": "뒤대쉬",
+      "duration": 1.2,
+      "cooldown": 2,
+      "events": [
+        {
+          "id": "5dd955db-6068-4e2d-a217-1911ce4ace83",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "96b18425-3cbf-4342-9e55-16c53b676818",
+          "time": 0.7,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "ecb5d694-cd5e-481f-8e87-c317fb555777",
+          "time": 1.2,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "후퇴",
+          "dist": 5,
+          "track": false,
+          "customPath": null
+        }
+      ]
+    },
+    {
+      "id": "run",
+      "name": "달리기",
+      "duration": 0.6,
+      "cooldown": 0,
+      "events": [
+        {
+          "id": "c2dcdce5-1afd-403d-befc-f8d82a46a67e",
+          "time": 0.6,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 5,
+          "side": false
+        }
+      ]
+    }
+  ],
+  "bt": [
+    {
+      "id": "ed361fdc-9a99-4684-bb66-b0b677936a97",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "slam",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "근접 강타(둔화지형)"
+    },
+    {
+      "id": "3c5bfb8e-c282-4b66-8a49-0019624ca615",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "sweep",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "슬램 쿨 중 2연 스윕"
+    },
+    {
+      "id": "3d35aa2e-3338-4479-b9da-4ac83ba15161",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "jumpslam",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "중거리 갭클로즈 강타"
+    },
+    {
+      "id": "d0107421-29b7-4af2-83d7-57b347c7e69a",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": -1,
+      "patternId": "frontdash",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "그 외 앞대쉬 접근"
+    },
+    {
+      "id": "a791c503-0cc8-43ab-bb46-8ebfa8b94ffb",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "backdash",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "근접 시 후퇴"
+    },
+    {
+      "id": "448ce186-94b7-4dc0-9ae5-830dfc19fcf7",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "sidewalk",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "중거리 견제"
+    },
+    {
+      "id": "72e28f3a-2067-4de8-addc-dde44784227c",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": -1,
+      "patternId": "run",
+      "inclusive": 3,
+      "exclusive": 7,
+      "desc": "접근(3~7m 유지)"
+    }
+  ],
+  "projectiles": [],
+  "terrains": [
+    {
+      "id": "cdb57f40-3f0b-4804-941a-67a4a9bd4b99",
+      "name": "둔화 4m/5s",
+      "terrain": "둔화",
+      "size": 4,
+      "duration": 5
+    }
+  ]
+}

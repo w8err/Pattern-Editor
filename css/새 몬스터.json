@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "id": "5c44466d-111e-40ea-9119-77df8d7b416b",
+  "name": "새 몬스터",
+  "kind": "monster",
+  "size": 0.6,
+  "rotationSpeed": 360,
+  "distanceBands": [
+    {
+      "name": "근거리",
+      "max": 4
+    },
+    {
+      "name": "중거리",
+      "max": 8
+    },
+    {
+      "name": "장거리",
+      "max": 99
+    }
+  ],
+  "phases": [
+    {
+      "name": "기본",
+      "hp": 1000,
+      "transitionPatternId": null
+    }
+  ],
+  "patterns": [],
+  "bt": []
+}

@@ -1,0 +1,5 @@
+# 브라우저 앱은 ES 모듈 + Canvas만 사용 — node_modules는 tools(verify.mjs)용이라 배포 불필요
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
