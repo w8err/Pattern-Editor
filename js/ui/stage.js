@@ -23,6 +23,7 @@ export class Playback {
     this.playing = false; this.speed = 1; this.t = 0; this.field = 20; // field = 맵 한 변(m)
     this.user = { x: 5, y: 0 }; this._hist = [];
     this.userAI = false; this._ai = null; this._users = []; this._userSel = ''; this._defaultUser = newUser(); // 유저 AI
+    this.userManual = false; this._keys = {}; this._mouseW = null; // 유저 수동 조작(WASD·마우스 조준·스페이스 대쉬)
     this._weaponFx = null; // 무기 교체 이펙트
     this.repeatN = null; this._expCache = null; // 단일 모드 반복 펼치기 횟수/캐시
     this._singleNotes = 0; this._noteScanSingle = 0; // 단일 재생 중 누적 음표
@@ -94,7 +95,8 @@ export class Playback {
         <span id="pb-rep-wrap" style="display:none"><span class="sp"></span><span class="dim" style="font-size:11px">반복</span> <input id="pb-rep" type="number" min="1" value="1" style="width:44px"></span>
         <span class="sp"></span>
         <button class="seg" id="pb-ai">🤖 AI 유저</button>
-        <select id="pb-userdef" title="AI 유저 데이터"><option value="">기본(하루)</option></select>
+        <button class="seg" id="pb-manual" title="WASD 이동 · 마우스 조준 · 스페이스 대쉬">🎮 수동</button>
+        <select id="pb-userdef" title="유저 데이터(스펙)"><option value="">기본(하루)</option></select>
       </div>`;
     const C = this.controls;
     C.querySelectorAll('[data-mode]').forEach((b) => b.onclick = () => this._setMode(b.dataset.mode));
@@ -116,7 +118,12 @@ export class Playback {
     };
     C.querySelector('#pb-ai').onclick = (e) => {
       this.userAI = !this.userAI; e.target.classList.toggle('on', this.userAI);
-      if (this.userAI) this._resetAI();
+      if (this.userAI) { this.userManual = false; C.querySelector('#pb-manual').classList.remove('on'); this._resetAI(); }
+      this.render();
+    };
+    C.querySelector('#pb-manual').onclick = (e) => {
+      this.userManual = !this.userManual; e.target.classList.toggle('on', this.userManual);
+      if (this.userManual) { this.userAI = false; C.querySelector('#pb-ai').classList.remove('on'); this._keys = {}; this._resetAI(); }
       this.render();
     };
     C.querySelector('#pb-userdef').onchange = (e) => { this._userSel = e.target.value; this._resetAI(); };
@@ -160,11 +167,28 @@ export class Playback {
     const cl = (v) => { const h = this.field / 2; return Math.max(-h, Math.min(h, v)); }; // 유저도 맵 안으로
     this.canvas.addEventListener('mousedown', (e) => {
       const [wx, wy] = pos(e);
-      if (this.userAI) return;                 // AI 모드면 수동 이동 불가
+      if (this.userAI || this.userManual) return;  // AI·수동 모드면 드래그 배치 불가
       if (Math.hypot(wx - this.user.x, wy - this.user.y) < 1.2) drag = true;
     });
     window.addEventListener('mousemove', (e) => { if (drag) { const [wx, wy] = pos(e); this.user.x = cl(wx); this.user.y = cl(wy); this.render(); } });
     window.addEventListener('mouseup', () => drag = false);
+    // 수동 조작: 마우스 위치로 조준(facing) · 캔버스 위에서만 추적
+    this.canvas.addEventListener('mousemove', (e) => {
+      const [wx, wy] = pos(e); this._mouseW = { x: wx, y: wy };
+      if (this.userManual && !this.playing) this.render();
+    });
+    // 수동 조작: WASD 이동 + 스페이스 대쉬(입력 필드 포커스 중엔 무시)
+    const isTyping = (t) => t && /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName);
+    const keyName = (e) => (e.key === ' ' ? ' ' : e.key.toLowerCase());
+    window.addEventListener('keydown', (e) => {
+      if (!this.userManual || isTyping(e.target)) return;
+      const k = keyName(e);
+      if ('wasd '.includes(k) && k.length) { this._keys[k] = true; e.preventDefault(); }
+    });
+    window.addEventListener('keyup', (e) => {
+      const k = keyName(e);
+      if ('wasd '.includes(k) && k.length) this._keys[k] = false;
+    });
   }
   // gt = 전역 재생 시각. 재생 중이면 기록 보간(과거 시점 고정 → 재조준 방지), 아니면 라이브.
   _userAt(gt) {
@@ -246,6 +270,37 @@ export class Playback {
     if (bestA != null) { u.x += Math.cos(bestA) * def.moveSpeed * dt; u.y += Math.sin(bestA) * def.moveSpeed * dt; }
     this._clampUser();
   }
+  // ── 유저 수동 조작(WASD 이동 · 마우스 조준 · 스페이스 대쉬) ──
+  //  스태미나/대쉬 무적은 AI와 동일한 _ai 상태·스펙(def)을 그대로 사용(현상유지).
+  _stepUserManual(dt) {
+    if (!this._ai) this._resetAI();
+    const ai = this._ai, u = this.user, def = this._activeUserDef();
+    if (ai.invulnT > 0) ai.invulnT -= dt;
+    // 조준(facing) = 마우스 방향
+    if (this._mouseW) u.facing = Math.atan2(this._mouseW.y - u.y, this._mouseW.x - u.x);
+    // 대시 진행 중: 관성 이동(입력 무시)
+    if (ai.dashT > 0) { ai.dashT -= dt; u.x += ai.dvx * dt; u.y += ai.dvy * dt; this._clampUser(); return; }
+    // 스태미나 재생(대시 외) — AI와 동일
+    ai.stamina = Math.min(def.maxStamina, ai.stamina + def.staminaRegen * (ai.exhausted ? 2 : 1) * dt);
+    if (ai.exhausted && ai.stamina >= def.maxStamina) ai.exhausted = false;
+    // WASD 이동 방향(화면 기준: +y가 아래 → W는 -y)
+    let ix = 0, iy = 0;
+    if (this._keys['w']) iy -= 1; if (this._keys['s']) iy += 1;
+    if (this._keys['a']) ix -= 1; if (this._keys['d']) ix += 1;
+    const len = Math.hypot(ix, iy);
+    // 대시: 스페이스 — 이동 입력 방향(없으면 마우스 조준 방향)으로
+    if (this._keys[' '] && !ai.exhausted && ai.stamina >= def.dashStamina) {
+      const da = len > 1e-6 ? Math.atan2(iy, ix) : (u.facing ?? 0);
+      ai.stamina -= def.dashStamina; if (ai.stamina <= 0) { ai.stamina = 0; ai.exhausted = true; }
+      ai.dashT = def.dashDur; ai.invulnT = def.dashInvuln;
+      const spd = def.dashDist / def.dashDur; ai.dvx = Math.cos(da) * spd; ai.dvy = Math.sin(da) * spd;
+      this._keys[' '] = false;  // 한 번 누름 = 대시 1회(떼었다 다시 눌러야 재발동)
+      u.x += ai.dvx * dt; u.y += ai.dvy * dt; this._clampUser(); return;
+    }
+    // 일반 이동
+    if (len > 1e-6) { u.x += ix / len * def.moveSpeed * dt; u.y += iy / len * def.moveSpeed * dt; }
+    this._clampUser();
+  }
   _histAt(gt) {
     const h = this._hist;
     if (gt >= h[h.length - 1].t) return { x: this.user.x, y: this.user.y };
@@ -294,9 +349,11 @@ export class Playback {
           this._singleNotes = Math.max(0, Math.min(sim.NOTE_MAX, this._singleNotes + (f.amount || 1)));
         this._noteScanSingle = this.t; this._scanT = this.t;
         if (this.userAI) this._stepUserAI(dt, snap.state, sp, this.t);
+        else if (this.userManual) this._stepUserManual(dt);
       } else {
         this._stepBt(dt);
         if (this.userAI) this._stepUserAI(dt, this.bt.state, this.bt.cur, this.bt.localT);
+        else if (this.userManual) this._stepUserManual(dt);
       }
       const wt1 = performance.now();
       this.render();
@@ -660,14 +717,19 @@ export class Playback {
   _user() {
     const x = this.ctx; const u = this._userAt(this._clock);
     const [sx, sy] = this.w2s(u.x, u.y);
-    // AI 무적(대시) 표시: 흰 링
-    if (this.userAI && this._ai?.invulnT > 0) { x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.arc(sx, sy, 10, 0, sim.TAU); x.stroke(); }
+    // 무적(대시) 표시: 흰 링
+    if ((this.userAI || this.userManual) && this._ai?.invulnT > 0) { x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.arc(sx, sy, 10, 0, sim.TAU); x.stroke(); }
+    // 수동 조작: 마우스 조준 방향 표시
+    if (this.userManual && this.user.facing != null) {
+      x.strokeStyle = '#22d3ee'; x.lineWidth = 2;
+      x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + Math.cos(this.user.facing) * 15, sy + Math.sin(this.user.facing) * 15); x.stroke();
+    }
     x.fillStyle = '#22d3ee'; x.beginPath(); x.arc(sx, sy, 7, 0, sim.TAU); x.fill();
     x.strokeStyle = '#0b0f14'; x.lineWidth = 2; x.stroke();
     x.fillStyle = '#22d3ee'; x.font = '9px sans-serif';
-    x.fillText(this.userAI ? '유저(AI)' : '유저', sx + 9, sy + 3);
-    // AI 스태미나 바
-    if (this.userAI && this._ai) {
+    x.fillText(this.userManual ? '유저(조작)' : this.userAI ? '유저(AI)' : '유저', sx + 9, sy + 3);
+    // 스태미나 바(AI·수동 공통)
+    if ((this.userAI || this.userManual) && this._ai) {
       const def = this._activeUserDef(), w = 22, r = this._ai.stamina / def.maxStamina;
       x.fillStyle = '#30363d'; x.fillRect(sx - w / 2, sy - 16, w, 3);
       x.fillStyle = this._ai.exhausted ? '#f85149' : '#3fb950'; x.fillRect(sx - w / 2, sy - 16, w * r, 3);
