@@ -68,8 +68,8 @@
       "id": "track_note",
       "name": "추적음표 투사체",
       "damage": 30,
-      "speed": 12,
-      "lifetime": 1.8,
+      "speed": 15,
+      "lifetime": 0.9,
       "homing": 50
     }
   ],
@@ -136,7 +136,7 @@
           "composite": false,
           "sub": [],
           "dest": "유저로부터 랜덤",
-          "dist": 7
+          "dist": 10
         }
       ]
     },
@@ -144,7 +144,7 @@
       "id": "jungmori",
       "name": "중모리",
       "duration": 2.5,
-      "cooldown": 1,
+      "cooldown": 5,
       "repeat": null,
       "events": [
         {
@@ -210,7 +210,7 @@
       "id": "jungjung",
       "name": "중중모리",
       "duration": 2.3,
-      "cooldown": 2,
+      "cooldown": 5,
       "repeat": {
         "segEnd": 1.5,
         "max": 3,
@@ -293,7 +293,7 @@
       "id": "jajin",
       "name": "자진모리",
       "duration": 2.5,
-      "cooldown": 3,
+      "cooldown": 5,
       "events": [
         {
           "id": "jz-f",
@@ -382,7 +382,7 @@
       "id": "jungmori_h",
       "name": "중모리, 해금",
       "duration": 1.8,
-      "cooldown": 1,
+      "cooldown": 4,
       "repeat": null,
       "events": [
         {
@@ -490,7 +490,7 @@
       "id": "jungjung_h",
       "name": "중중모리, 해금",
       "duration": 1.8,
-      "cooldown": 2,
+      "cooldown": 4,
       "repeat": {
         "segEnd": 1.5,
         "max": 3,
@@ -615,7 +615,7 @@
       "id": "jajin_h",
       "name": "자진모리, 해금",
       "duration": 2.5,
-      "cooldown": 3,
+      "cooldown": 4,
       "events": [
         {
           "id": "jzh-f",
