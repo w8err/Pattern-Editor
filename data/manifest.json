@@ -1,56 +1,35 @@
 {
-  "generated": "2026-06-22T04:28:58.522Z",
-  "count": 10,
+  "count": 6,
   "files": [
     {
-      "path": "몬스터/볼케이노 대.json",
+      "path": "몬스터/황야 소형-근거리.json",
       "kind": "monster",
-      "name": "볼케이노 대"
+      "name": "황야 소형-근거리"
     },
     {
-      "path": "몬스터/볼케이노 소.json",
+      "path": "몬스터/황야 소형-원거리.json",
       "kind": "monster",
-      "name": "볼케이노 소"
+      "name": "황야 소형-원거리"
     },
     {
-      "path": "몬스터/볼케이노 중.json",
+      "path": "몬스터/황야 엘리트 소형.json",
       "kind": "monster",
-      "name": "볼케이노 중"
+      "name": "황야 엘리트 소형"
     },
     {
-      "path": "몬스터/엘리트 유웅 대.json",
+      "path": "몬스터/황야 엘리트 중형.json",
       "kind": "monster",
-      "name": "엘리트 유웅 대"
+      "name": "황야 엘리트 중형"
     },
     {
-      "path": "몬스터/유웅 대.json",
+      "path": "몬스터/황야 중형.json",
       "kind": "monster",
-      "name": "유웅 대"
-    },
-    {
-      "path": "몬스터/유웅 소.json",
-      "kind": "monster",
-      "name": "유웅 소"
-    },
-    {
-      "path": "몬스터/유웅 중.json",
-      "kind": "monster",
-      "name": "유웅 중"
+      "name": "황야 중형"
     },
     {
       "path": "보스/아현 (양).json",
       "kind": "boss",
       "name": "아현 (양)"
-    },
-    {
-      "path": "보스/적산 (붉은 소).json",
-      "kind": "boss",
-      "name": "적산 (붉은 소)"
-    },
-    {
-      "path": "보스/천구 (개).json",
-      "kind": "boss",
-      "name": "천구 (개)"
     }
   ]
 }

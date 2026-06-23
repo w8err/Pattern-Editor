@@ -30,7 +30,7 @@ async function walk(dir, out) {
 const files = [];
 await walk(DATA, files);
 files.sort((a, b) => a.path.localeCompare(b.path, 'ko'));
-const manifest = { generated: new Date().toISOString(), count: files.length, files };
+const manifest = { count: files.length, files }; // generated(타임스탬프) 제외 — 목록 같으면 diff 0
 await writeFile(join(DATA, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', 'utf8');
 console.log(`manifest.json 생성: ${files.length}개 파일`);
 for (const f of files) console.log(`  · ${f.path}  [${f.kind || '?'}]`);

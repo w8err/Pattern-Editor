@@ -24,7 +24,17 @@ const tree = new TreeView($('#tree'), {
       toast('파일 읽기 실패: ' + err.message, true);
     }
   },
+  onChange: () => syncManifest(), // 생성/삭제 후 manifest 자동 갱신
 });
+
+// 로컬(소유자) 폴더의 data/manifest.json을 실제 트리에 맞춰 다시 씀.
+//  파일 생성/삭제/이름변경 때마다 호출 → '수동 gen-manifest 깜빡' 사고 방지.
+//  웹 모드(fetch 읽기 전용)에선 쓸 수 없으므로 건너뜀.
+async function syncManifest() {
+  if (webMode || !localHandle) return;
+  try { await store.regenManifest(localHandle); }
+  catch (err) { toast('manifest 갱신 실패: ' + err.message, true); }
+}
 
 const inspector = new Inspector($('#inspector'), {
   onSave: async (entity, fileNode) => {
@@ -48,6 +58,7 @@ const inspector = new Inspector($('#inspector'), {
       const text = model.serialize(entity);
       await store.renameFile(fileNode.parent.handle, fileNode.name, entity.name, text);
       await tree.refresh();
+      await syncManifest();   // 이름 변경 시 manifest의 path·name 동기화
       await refreshUsers();   // 유저 데이터 변경 반영(AI 드롭다운)
       toast('저장됨: ' + entity.name);
     } catch (err) {
@@ -164,7 +175,7 @@ async function tryLoadWeb() {
   if (!man) return false;
   webMode = true;
   tree.setRoot(store.buildTreeFromManifest(man));
-  $('#root-name').textContent = '📦 배포 데이터';
+  $('#root-name').textContent = ''; // 세그먼트가 이미 '배포 데이터'를 표시 → 중복 라벨 제거
   $('#hint').textContent = '읽기 전용 · 편집은 이 브라우저에만 저장(공유 안 됨)';
   setReady(false); // 생성/삭제(파일 쓰기) 불가 — 편집·저장(localStorage)은 가능
   await refreshUsers();

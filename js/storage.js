@@ -165,3 +165,29 @@ export async function renameFile(dirHandle, oldName, newName, text) {
   if (fileNameFor(newName) !== oldName) await dirHandle.removeEntry(oldName);
   return fh;
 }
+
+// ── manifest 자동 갱신(FSA) ───────────────────────
+//  tools/gen-manifest.mjs 의 브라우저판. 로컬 폴더(소유자)에서 파일을
+//  생성/삭제/이름변경한 뒤 호출 → data/manifest.json 을 실제 트리에 맞춰 다시 씀.
+//  (웹 모드는 fetch 읽기 전용이라 호출하지 않음)
+export async function regenManifest(rootHandle) {
+  const files = [];
+  const walk = async (dirHandle, prefix) => {
+    const ents = [];
+    for await (const [name, h] of dirHandle.entries()) ents.push([name, h]);
+    for (const [name, h] of ents) {
+      const rel = prefix ? prefix + '/' + name : name;
+      if (h.kind === 'directory') { await walk(h, rel); continue; }
+      if (!name.endsWith('.json') || name === 'manifest.json') continue; // manifest는 엔티티 아님
+      let kind = null, ename = name.replace(/\.json$/, '');
+      try { const d = JSON.parse(await (await h.getFile()).text()); kind = d.kind || null; if (d.name) ename = d.name; } catch {}
+      files.push({ path: rel, kind, name: ename });
+    }
+  };
+  await walk(rootHandle, '');
+  files.sort((a, b) => a.path.localeCompare(b.path, 'ko'));
+  const manifest = { count: files.length, files }; // generated(타임스탬프) 제외 — 목록 같으면 diff 0
+  const fh = await rootHandle.getFileHandle('manifest.json', { create: true });
+  await writeFile(fh, JSON.stringify(manifest, null, 2) + '\n');
+  return files.length;
+}

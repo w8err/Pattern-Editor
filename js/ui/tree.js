@@ -6,9 +6,10 @@ import * as store from '../storage.js';
 import * as model from '../model.js';
 
 export class TreeView {
-  constructor(rootEl, { onSelectFile }) {
+  constructor(rootEl, { onSelectFile, onChange }) {
     this.el = rootEl;
     this.onSelectFile = onSelectFile;
+    this.onChange = onChange; // 파일 생성/삭제 후 → main이 manifest 자동 갱신
     this.rootNode = null;
     this.selected = null;     // 선택된 node(dir 또는 file)
     this.expanded = new Set(); // 펼쳐진 dir 핸들 name 경로
@@ -104,6 +105,7 @@ export class TreeView {
     this.expanded.add(this._key(this.targetDirNode()));
     await store.createFolder(dir, name);
     await this.refresh();
+    await this.onChange?.(); // 폴더만으론 manifest 안 바뀌지만 일관성 위해 호출
   }
 
   async newEntity(kind) {
@@ -116,6 +118,7 @@ export class TreeView {
     this.expanded.add(this._key(this.targetDirNode()));
     const fh = await store.createEntityFile(dir, ent, model.serialize(ent));
     await this.refresh();
+    await this.onChange?.(); // 새 엔티티 → manifest 갱신
     // 방금 만든 파일 선택
     const node = this._findFileByName(this.rootNode, fh.name);
     if (node) { this.selected = node; this.render(); this.onSelectFile?.(node); }
@@ -135,6 +138,7 @@ export class TreeView {
     await store.removeEntry(n.parent.handle, n.name, isDir);
     this.selected = null;
     await this.refresh();
+    await this.onChange?.(); // 삭제 → manifest 갱신
   }
 }
 
