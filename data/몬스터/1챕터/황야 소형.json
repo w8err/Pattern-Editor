@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "id": "102b6624-dcf8-4800-a9f5-7f03be16b20d",
+  "name": "황야 소형",
+  "kind": "monster",
+  "hp": 1000,
+  "size": 0.4,
+  "rotationSpeed": 360,
+  "description": "",
+  "distanceBands": [
+    {
+      "name": "근거리",
+      "min": 0,
+      "max": 5
+    },
+    {
+      "name": "중~장거리",
+      "min": 5,
+      "max": 15
+    }
+  ],
+  "phases": [
+    {
+      "name": "기본",
+      "hp": 1000,
+      "transitionPatternId": null
+    }
+  ],
+  "projectiles": [],
+  "terrains": [],
+  "patterns": [
+    {
+      "id": "966393ea-218a-4281-bc00-93623effa312",
+      "name": "베기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": [
+        {
+          "id": "4f9c6c7e-c3d0-4e8d-8773-4e2b1a406d8c",
+          "time": 0.7,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "61e5233b-38cb-42f5-b889-1153ad524218",
+          "time": 0.85,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": false,
+          "indicatorTime": 0.5,
+          "damage": 0,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "offset": 1,
+          "sizeA": 1.5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        },
+        {
+          "id": "769dc4a0-d96c-4059-a6a4-cb7f8059f279",
+          "time": 0.8,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "직선",
+          "dist": 1,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null
+        }
+      ]
+    },
+    {
+      "id": "c0efd4e9-408e-4b54-919b-26b692ffd0f0",
+      "name": "좌우걷기",
+      "duration": 3,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "14ce307b-8757-48c9-9b80-b539a3f113d2",
+          "time": 3,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 3,
+          "side": true
+        }
+      ]
+    },
+    {
+      "id": "06ec423b-4593-4efb-8e70-9b36a0474a2c",
+      "name": "달리기",
+      "duration": 3,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "eba0d4a5-addd-40ff-a9b1-3e7436aa999e",
+          "time": 5,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 5,
+          "side": false
+        },
+        {
+          "id": "49caa088-1138-4634-8b66-9030c2243428",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        }
+      ]
+    }
+  ],
+  "bt": [
+    {
+      "id": "50245cc3-02ed-41e5-9d1a-30c9ee408f53",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "966393ea-218a-4281-bc00-93623effa312",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "c0de8b3f-4431-41f3-ba76-6a38c52759b6",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": -1,
+      "patternId": "c0efd4e9-408e-4b54-919b-26b692ffd0f0",
+      "inclusive": 4,
+      "exclusive": 7,
+      "desc": ""
+    },
+    {
+      "id": "5ab8bf33-4674-4e98-854c-6baf6a676812",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "06ec423b-4593-4efb-8e70-9b36a0474a2c",
+      "inclusive": 4,
+      "exclusive": 99,
+      "desc": ""
+    }
+  ],
+  "color": "#afa69a"
+}

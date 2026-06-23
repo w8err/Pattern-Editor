@@ -312,7 +312,7 @@ export function simulateUpTo(pattern, tEnd, opts = {}) {
       else if (fe.type === '투사체') {
         // 기본은 몸 방향. 유저조준=발사 순간 유저 위치. 공격각도내 랜덤=부채꼴 안 무작위(렌더가 각 발 처리).
         let pdir = snap.facing, cone = null;
-        if (fe.dir === '유저조준') pdir = Math.atan2(u.y - snap.my, u.x - snap.mx);
+        if (fe.dir === '유저조준' || fe.dir === '궤적') pdir = Math.atan2(u.y - snap.my, u.x - snap.mx); // 궤적: +x를 유저 방향에 맞춤
         else if (fe.dir === '공격각도내 랜덤' && activeCone) { cone = activeCone; pdir = activeCone.axis; }
         out.push({ type: '투사체', time: ft, x: snap.mx, y: snap.my, dir: pdir, cone, burstK: entry.burstK ?? null, ev: fe });
       }

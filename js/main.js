@@ -17,6 +17,13 @@ const playback = new Playback({
 
 const tree = new TreeView($('#tree'), {
   onSelectFile: async (node) => {
+    if (node === inspector.fileNode) return; // 이미 열려있는 파일 → 재로딩으로 편집 날리지 않음
+    // 미저장 변경 보호: 다른 파일로 이동 시 경고(취소 시 현재 파일·편집 유지)
+    if (inspector.dirty && inspector.fileNode) {
+      const ok = confirm('저장하지 않은 변경이 있습니다.\n\n확인 = 저장 후 이동\n취소 = 현재 파일에 머무름(편집 유지)');
+      if (!ok) { tree.reselect(inspector.fileNode); return; }
+      await inspector.save();
+    }
     try {
       const data = await readEntity(node);
       inspector.load(model.deserialize(JSON.stringify(data)), node);

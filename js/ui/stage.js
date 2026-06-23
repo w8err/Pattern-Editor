@@ -206,17 +206,25 @@ export class Playback {
   // ── 유저 AI(컨텍스트 스티어링 + 위험맵 + 노이즈) ──
   setUsers(list) {
     this._users = list || [];
-    const sel = document.querySelector('#pb-userdef'); if (!sel) return;
-    const cur = this._userSel;
-    sel.innerHTML = `<option value="">기본(하루)</option>` + this._users.map((u) => `<option value="${esc(u.name)}">${esc(u.name)}</option>`).join('');
-    if (this._users.some((u) => u.name === cur)) sel.value = cur; else { this._userSel = ''; sel.value = ''; }
+    const sel = document.querySelector('#pb-userdef');
+    if (sel) {
+      const cur = this._userSel;
+      sel.innerHTML = `<option value="">기본(하루)</option>` + this._users.map((u) => `<option value="${esc(u.name)}">${esc(u.name)}</option>`).join('');
+      if (this._users.some((u) => u.name === cur)) sel.value = cur; else { this._userSel = ''; sel.value = ''; }
+    }
+    if (this.userAI || this.userManual) this._resetAI(); // 편집·갱신분 즉시 반영
+    this.render();
   }
   _activeUserDef() {
     const u = this._users.find((x) => x.name === this._userSel);
     return u ? u.data : this._defaultUser;
   }
   // 기본 유저(하루) 스펙 교체 — main이 localStorage에서 로드/저장 후 주입
-  setDefaultUser(data) { if (data) this._defaultUser = data; this.render(); }
+  setDefaultUser(data) {
+    if (data) this._defaultUser = data;
+    if ((this.userAI || this.userManual) && this._userSel === '') this._resetAI(); // 기본 유저 편집 즉시 반영
+    this.render();
+  }
   _resetAI() {
     const def = this._activeUserDef();
     const phases = []; for (let i = 0; i < 16; i++) phases.push(Math.random() * Math.PI * 2);
@@ -384,28 +392,56 @@ export class Playback {
   _spawnProjectiles(f) {
     const pd = this._projDef(f.ev);
     const spd = pd.speed || 10, turn = (pd.homing || 0) / 100 * Math.PI * 2, life = pd.lifetime || 2; // 호밍100%=360°/s 선회
-    const custom = f.ev.dir === '커스텀' && f.ev.customSpawns?.length ? f.ev.customSpawns : null;
+    const rad = pd.size ?? 0.3, col = pd.color || '#f0883e'; // 투사체 크기(반경 m)·색
+    // 궤적: 그린 곡선을 유저 방향(f.dir)으로 회전·평행이동한 절대 폴리라인을 등속 추종.
+    if (f.ev.dir === '궤적' && f.ev.projPath?.length) {
+      const apath = this._projAbsPath(f.x, f.y, f.dir, f.ev.projPath);
+      const len = this._pathLen(apath);
+      const burstP = f.burstK != null, nP = burstP ? 1 : (f.ev.count || 1);
+      for (let k = 0; k < nP; k++) this.projWorld.push({ mode: 'path', apath, len, spd, life, rad, col, born: this._clock, x: apath[0].x, y: apath[0].y });
+      return;
+    }
     const burst = f.burstK != null, n = burst ? 1 : (f.ev.count || 1);
     for (let k = 0; k < n; k++) {
       const kk = burst ? f.burstK : k;
-      const c = custom ? custom[kk % custom.length] : null;
-      const ox = f.x + (c ? c.x : 0), oy = f.y + (c ? c.y : 0);
-      const ang = c ? c.angle
-        : f.ev.dir === '랜덤360' ? sim.seeded(f.ev.id, kk + 1) * sim.TAU
+      const ang = f.ev.dir === '랜덤360' ? sim.seeded(f.ev.id, kk + 1) * sim.TAU
         : f.ev.dir === '균일360' ? f.dir + (kk / n) * sim.TAU
         : f.ev.dir === '공격각도내 랜덤' ? (f.cone ? f.cone.axis + (sim.seeded(f.ev.id, kk + 1) - 0.5) * f.cone.widthRad : f.dir)
         : f.dir + (k - (n - 1) / 2) * 0.12;
-      this.projWorld.push({ x: ox, y: oy, ang, spd, turn, life, born: this._clock });
+      this.projWorld.push({ x: f.x, y: f.y, ang, spd, turn, life, rad, col, born: this._clock });
     }
+  }
+  // 궤적 점(원점상대, +x=유저방향)을 발사각 pdir로 회전 + (ox,oy) 평행이동한 절대 폴리라인.
+  _projAbsPath(ox, oy, pdir, path) {
+    const c = Math.cos(pdir), s = Math.sin(pdir);
+    return path.map((p) => ({ x: ox + p.x * c - p.y * s, y: oy + p.x * s + p.y * c }));
+  }
+  _pathLen(pts) { let l = 0; for (let i = 0; i < pts.length - 1; i++) l += Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); return l; }
+  // 폴리라인 위 호 길이 비율 prog(0~1) 지점 보간(원점 prepend 안 함 — 첫 점이 발사점).
+  _polyAt(pts, prog) {
+    if (pts.length < 2) return pts[0] || { x: 0, y: 0 };
+    const seg = []; let total = 0;
+    for (let i = 0; i < pts.length - 1; i++) { const l = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y); seg.push(l); total += l; }
+    if (total < 1e-6) return pts[0];
+    let d = prog * total;
+    for (let i = 0; i < seg.length; i++) { if (d <= seg[i]) { const f = seg[i] ? d / seg[i] : 0; return { x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f }; } d -= seg[i]; }
+    return pts[pts.length - 1];
   }
   // 매 프레임 적분: 진행 방향(ang)만 유저로 선회(turn rad/s)하며 자기 속도로 직진. 좌표를 끌어당기지 않음.
   _updateProjWorld(dt) {
     const u = this._userAt(this._clock);
     for (const p of this.projWorld) {
+      if (p.mode === 'path') { // 궤적: 적분 대신 곡선 위 등속 보간
+        const age = this._clock - p.born;
+        const prog = p.len > 1e-6 ? Math.min(1, (age * p.spd) / p.len) : 1;
+        const pos = this._polyAt(p.apath, prog); p.x = pos.x; p.y = pos.y;
+        p.done = prog >= 1;
+        continue;
+      }
       if (p.turn > 0) { const des = Math.atan2(u.y - p.y, u.x - p.x); p.ang = sim.rotToward(p.ang, des, p.turn * dt); }
       p.x += Math.cos(p.ang) * p.spd * dt; p.y += Math.sin(p.ang) * p.spd * dt;
     }
-    this.projWorld = this.projWorld.filter((p) => this._clock - p.born <= p.life);
+    this.projWorld = this.projWorld.filter((p) => p.mode === 'path' ? (!p.done && this._clock - p.born <= p.life) : this._clock - p.born <= p.life);
   }
   // 월드 투사체 렌더(재생 중) — 적분된 현재 위치 사용
   _drawProjWorld() {
@@ -413,7 +449,7 @@ export class Playback {
     const x = this.ctx;
     for (const p of this.projWorld) {
       const [sx, sy] = this.w2s(p.x, p.y);
-      x.fillStyle = '#f0883e'; x.beginPath(); x.arc(sx, sy, 4, 0, sim.TAU); x.fill();
+      x.fillStyle = p.col || '#f0883e'; x.beginPath(); x.arc(sx, sy, Math.max(2, (p.rad ?? 0.3) * this.scale), 0, sim.TAU); x.fill();
     }
   }
   // 스크럽 미리보기용: 정지(고정 유저) 상태에서 발사~age 까지 선회 적분한 위치
@@ -466,6 +502,8 @@ export class Playback {
     }
     const r = sim.simulateUpTo(b.cur, Math.min(b.localT, b.cur.duration), { user: this._userFn(b.localT), rotationSpeed: e.rotationSpeed, init: b.state, mapSize: this.field, size: e.size });
     this._btSnapshot = { ...r, pattern: b.cur };
+    // 이동 패턴(걷기/대쉬 등)은 r.state가 라이브 위치 → 취소·반복밴드 판정엔 시작거리(d) 대신 라이브 거리 사용.
+    const dLive = Math.hypot(r.state.mx - cur.x, r.state.my - cur.y);
     // 지속 지형/투사체 스폰(패턴 전환·반복과 무관하게 월드에 유지)
     for (const f of r.fires) if (f.time > this._btScanT && f.time <= b.localT) {
       if (f.type === '지형') this._spawnTerrain(f);
@@ -480,7 +518,7 @@ export class Playback {
     //  max = 총 시전 횟수(초기 1회 포함). 벽 때문에 대쉬 불가하면 즉시 중단.
     const rep = b.cur.repeat;
     if (rep && rep.segEnd && !b.repeatDone && b.localT >= rep.segEnd) {
-      const bandIdx = sim.bandFor(e, d);
+      const bandIdx = sim.bandFor(e, dLive);
       const feasNow = sim.patternFeasible(b.cur, { pos: { x: r.state.mx, y: r.state.my }, user: cur, lim: this.field / 2 - (e.size || 0) });
       if (b.loops < (rep.max ?? 1) - 1 && bandIdx <= (rep.maxBand ?? 99) && feasNow) {
         b.state = r.state;                 // 이동 누적 후 구간 처음부터 다시
@@ -493,7 +531,7 @@ export class Playback {
 
     // 취소 조건: 현재 거리 d 가 BT 행의 [inclusive, exclusive] 를 벗어나면 패턴 중단(특수는 예외)
     const row = b.curRow;
-    const cancel = row && row.mode !== '특수' && (d <= row.inclusive || d >= row.exclusive);
+    const cancel = row && row.mode !== '특수' && (dLive <= row.inclusive || dLive >= row.exclusive);
     if (b.localT >= b.cur.duration || cancel) {
       b.state = r.state;                       // 누적 위치 유지
       b.cd[b.cur.id] = b.cur.cooldown || 0;     // 패턴 쿨 시작
@@ -621,22 +659,29 @@ export class Playback {
         const pd = this._projDef(f.ev);
         if (age < 0) continue; const life = pd.lifetime || 2; if (age > life) continue;
         const spd = pd.speed || 10, turn = (pd.homing || 0) / 100 * Math.PI * 2;
-        const custom = f.ev.dir === '커스텀' && f.ev.customSpawns?.length ? f.ev.customSpawns : null;
+        const prad = Math.max(2, (pd.size ?? 0.3) * this.scale), pcol = pd.color || '#f0883e'; // 투사체 크기·색
+        // 궤적: 스크럽 시 곡선 가이드(흐리게) + 현재 호 길이 위치 점
+        if (f.ev.dir === '궤적' && f.ev.projPath?.length) {
+          const apath = this._projAbsPath(f.x, f.y, f.dir, f.ev.projPath), len = this._pathLen(apath);
+          x.strokeStyle = pcol + '55'; x.lineWidth = 1; x.beginPath();
+          apath.forEach((pp, i) => { const [px, py] = this.w2s(pp.x, pp.y); i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
+          const prog = len > 1e-6 ? Math.min(1, (age * spd) / len) : 1;
+          const pos = this._polyAt(apath, prog); const [sx, sy] = this.w2s(pos.x, pos.y);
+          x.fillStyle = pcol; x.beginPath(); x.arc(sx, sy, prad, 0, sim.TAU); x.fill();
+          continue;
+        }
         // 연사(burst)는 fire 1개=투사체 1발(seed는 burstK). 아니면 count발을 한 번에.
         const burst = f.burstK != null;
         const n = burst ? 1 : (f.ev.count || 1);
         for (let k = 0; k < n; k++) {
           const kk = burst ? f.burstK : k;            // 난수 시드 인덱스
-          const c = custom ? custom[kk % custom.length] : null;
-          const ox = f.x + (c ? c.x : 0), oy = f.y + (c ? c.y : 0);
-          const ang = c ? c.angle
-            : f.ev.dir === '랜덤360' ? sim.seeded(f.ev.id, kk + 1) * sim.TAU
+          const ang = f.ev.dir === '랜덤360' ? sim.seeded(f.ev.id, kk + 1) * sim.TAU
             : f.ev.dir === '균일360' ? f.dir + (kk / n) * sim.TAU
             : f.ev.dir === '공격각도내 랜덤' ? (f.cone ? f.cone.axis + (sim.seeded(f.ev.id, kk + 1) - 0.5) * f.cone.widthRad : f.dir)
             : f.dir + (k - (n - 1) / 2) * 0.12;
-          const p = this._steerPath(ox, oy, ang, spd, turn, age); // 선회 적분(정지=고정 유저)
+          const p = this._steerPath(f.x, f.y, ang, spd, turn, age); // 선회 적분(정지=고정 유저)
           const [sx, sy] = this.w2s(p.x, p.y);
-          x.fillStyle = '#f0883e'; x.beginPath(); x.arc(sx, sy, 4, 0, sim.TAU); x.fill();
+          x.fillStyle = pcol; x.beginPath(); x.arc(sx, sy, prad, 0, sim.TAU); x.fill();
         }
       } else if (f.type === '순간이동') {
         if (age < 0 || age > 0.4) continue; const a = 1 - age / 0.4;
@@ -707,7 +752,7 @@ export class Playback {
       x.fillStyle = wc; x.font = 'bold 11px sans-serif'; x.textAlign = 'center';
       x.fillText(this._weaponName(), sx, sy + rr + 16); x.textAlign = 'start';
     }
-    x.fillStyle = this.entity?.kind === 'boss' ? '#f0883e' : '#3fb950';
+    x.fillStyle = this.entity?.color || (this.entity?.kind === 'boss' ? '#f0883e' : '#3fb950');
     x.beginPath(); x.arc(sx, sy, rr, 0, sim.TAU); x.fill();
     x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + Math.cos(st.facing) * Math.max(8, r), sy + Math.sin(st.facing) * Math.max(8, r)); x.stroke();
   }
@@ -726,17 +771,18 @@ export class Playback {
   _user() {
     const x = this.ctx; const u = this._userAt(this._clock);
     const [sx, sy] = this.w2s(u.x, u.y);
+    const rr = Math.max(5, (this._activeUserDef().size || 0.5) * this.scale); // 유저 크기(size) 반영
     // 무적(대시) 표시: 흰 링
-    if ((this.userAI || this.userManual) && this._ai?.invulnT > 0) { x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.arc(sx, sy, 10, 0, sim.TAU); x.stroke(); }
+    if ((this.userAI || this.userManual) && this._ai?.invulnT > 0) { x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.arc(sx, sy, rr + 3, 0, sim.TAU); x.stroke(); }
     // 수동 조작: 마우스 조준 방향 표시
     if (this.userManual && this.user.facing != null) {
       x.strokeStyle = '#ffd33d'; x.lineWidth = 2;
       x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + Math.cos(this.user.facing) * 15, sy + Math.sin(this.user.facing) * 15); x.stroke();
     }
-    x.fillStyle = '#ffd33d'; x.beginPath(); x.arc(sx, sy, 7, 0, sim.TAU); x.fill();
+    x.fillStyle = '#ffd33d'; x.beginPath(); x.arc(sx, sy, rr, 0, sim.TAU); x.fill();
     x.strokeStyle = '#0b0f14'; x.lineWidth = 2; x.stroke();
     x.fillStyle = '#ffd33d'; x.font = '9px sans-serif';
-    x.fillText(this.userManual ? '유저(조작)' : this.userAI ? '유저(AI)' : '유저', sx + 9, sy + 3);
+    x.fillText(this.userManual ? '유저(조작)' : this.userAI ? '유저(AI)' : '유저', sx + rr + 4, sy + 3); // 반경 밖으로(폰에 안 파묻히게)
     // 스태미나 바(AI·수동 공통)
     if ((this.userAI || this.userManual) && this._ai) {
       const def = this._activeUserDef(), w = 22, r = this._ai.stamina / def.maxStamina;

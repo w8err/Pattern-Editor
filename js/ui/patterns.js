@@ -191,8 +191,8 @@ export class PatternEditor {
     // 커스텀 경로 에디터
     const dp = body.querySelector('[data-act="dashpath"]');
     if (dp) dp.onclick = () => openPathEditor('dash', ev, () => { this._mark(); this._renderEventBody(body, ev, depth); });
-    const pp = body.querySelector('[data-act="projpath"]');
-    if (pp) pp.onclick = () => openPathEditor('proj', ev, () => { this._mark(); this._renderEventBody(body, ev, depth); });
+    const tp = body.querySelector('[data-act="projtraj"]');
+    if (tp) tp.onclick = () => openPathEditor('projpath', ev, () => { this._mark(); this._renderEventBody(body, ev, depth); });
   }
 
   // 투사체/지형 "종류" 선택 드롭다운 (엔티티 정의 목록 참조)
@@ -239,7 +239,7 @@ export class PatternEditor {
         let p = lab('종류', this._defSel('proj', ev)) + lab('개수', inNum('count', ev.count, 1))
           + lab('연사 간격s', inNum('interval', ev.interval, 0.05))
           + lab('방향', inSel('dir', ev.dir, model.PROJ_DIRS, true));
-        if (ev.dir === '커스텀') p += `<button class="mini" data-act="projpath">생성/방향 편집…${ev.customSpawns?.length ? ' ✓' : ''}</button>`;
+        if (ev.dir === '궤적') p += `<button class="mini" data-act="projtraj">궤적 그리기…${ev.projPath?.length ? ' ✓' : ''}</button><span class="dim small">곡선 시작=생성위치·시작방향=발사방향, 곡선 따라 비행(+x=발사 순간 유저 방향)</span>`;
         else if (ev.dir === '랜덤360') p += `<span class="dim small">360° 무작위 ${ev.count || 1}방향(발사마다 재추첨)</span>`;
         else if (ev.dir === '균일360') p += `<span class="dim small">360° 균등 ${ev.count || 1}방향(${(360 / (ev.count || 1)).toFixed(0)}° 간격)</span>`;
         else if (ev.dir === '유저조준') p += `<span class="dim small">발사 순간의 유저 위치로 조준</span>`;

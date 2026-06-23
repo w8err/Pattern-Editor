@@ -2,27 +2,27 @@
   "count": 6,
   "files": [
     {
-      "path": "몬스터/황야 소형-근거리.json",
+      "path": "몬스터/1챕터/황야 대형.json",
       "kind": "monster",
-      "name": "황야 소형-근거리"
+      "name": "황야 대형"
     },
     {
-      "path": "몬스터/황야 소형-원거리.json",
+      "path": "몬스터/1챕터/황야 소형 엘리트.json",
       "kind": "monster",
-      "name": "황야 소형-원거리"
+      "name": "황야 소형 엘리트"
     },
     {
-      "path": "몬스터/황야 엘리트 소형.json",
+      "path": "몬스터/1챕터/황야 소형.json",
       "kind": "monster",
-      "name": "황야 엘리트 소형"
+      "name": "황야 소형"
     },
     {
-      "path": "몬스터/황야 엘리트 중형.json",
+      "path": "몬스터/1챕터/황야 중형 엘리트.json",
       "kind": "monster",
-      "name": "황야 엘리트 중형"
+      "name": "황야 중형 엘리트"
     },
     {
-      "path": "몬스터/황야 중형.json",
+      "path": "몬스터/1챕터/황야 중형.json",
       "kind": "monster",
       "name": "황야 중형"
     },

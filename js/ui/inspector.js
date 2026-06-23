@@ -53,6 +53,7 @@ export class Inspector {
           <label>체력(HP)<input id="f-hp" type="number" step="100" value="${e.hp}"></label>
           <label>크기(반경 m)<input id="f-size" type="number" step="0.05" value="${e.size}"></label>
           <label>회전속도(°/s)<input id="f-rot" type="number" step="10" value="${e.rotationSpeed}"></label>
+          <label>폰 색상<input id="f-color" type="color" value="${e.color || (isBoss ? '#f0883e' : '#3fb950')}"></label>
         </div>
 
         <div class="sec-hd">거리밴드 <button id="add-band" class="mini">+</button></div>
@@ -80,6 +81,7 @@ export class Inspector {
     this.el.querySelector('#f-hp').oninput = (ev) => { e.hp = +ev.target.value; this._mark(); };
     this.el.querySelector('#f-size').oninput = (ev) => { e.size = +ev.target.value; this._mark(); };
     this.el.querySelector('#f-rot').oninput = (ev) => { e.rotationSpeed = +ev.target.value; this._mark(); };
+    this.el.querySelector('#f-color').oninput = (ev) => { e.color = ev.target.value; this._mark(); this.onEntityLoad?.(e); }; // 색 변경 즉시 렌더 반영
     this.el.querySelector('#f-desc').oninput = (ev) => { e.description = ev.target.value; this._mark(); };
 
     this._renderBands();
@@ -216,17 +218,21 @@ export class Inspector {
       const row = document.createElement('div'); row.className = 'rowline';
       row.innerHTML = `
         <input class="grow" value="${attr(d.name)}" title="이름">
-        <input type="number" step="5" style="width:56px" value="${d.damage}" title="피해"><span class="unit">뎀</span>
-        <input type="number" step="0.5" style="width:50px" value="${d.speed}" title="속도"><span class="unit">속</span>
-        <input type="number" step="0.1" style="width:50px" value="${d.lifetime}" title="소멸s"><span class="unit">소</span>
-        <input type="number" step="10" style="width:50px" value="${d.homing}" title="호밍%"><span class="unit">호</span>
+        <input type="number" step="5" style="width:52px" value="${d.damage}" title="피해"><span class="unit">뎀</span>
+        <input type="number" step="0.5" style="width:48px" value="${d.speed}" title="속도"><span class="unit">속</span>
+        <input type="number" step="0.1" style="width:48px" value="${d.lifetime}" title="소멸s"><span class="unit">소</span>
+        <input type="number" step="10" style="width:46px" value="${d.homing}" title="호밍%"><span class="unit">호</span>
+        <input type="number" step="0.05" style="width:48px" value="${d.size ?? 0.3}" title="크기(반경 m)"><span class="unit">크</span>
+        <input type="color" style="width:30px;padding:0" value="${d.color || '#f0883e'}" title="색">
         <button class="mini del">×</button>`;
-      const [nm, dmg, sp, lf, hm] = row.querySelectorAll('input');
+      const [nm, dmg, sp, lf, hm, sz, col] = row.querySelectorAll('input');
       nm.oninput = () => { d.name = nm.value; this._mark(); };
       dmg.oninput = () => { d.damage = +dmg.value; this._mark(); };
       sp.oninput = () => { d.speed = +sp.value; this._mark(); };
       lf.oninput = () => { d.lifetime = +lf.value; this._mark(); };
       hm.oninput = () => { d.homing = +hm.value; this._mark(); };
+      sz.oninput = () => { d.size = +sz.value; this._mark(); };
+      col.oninput = () => { d.color = col.value; this._mark(); };
       row.querySelector('.del').onclick = () => { e.projectiles.splice(i, 1); this._mark(); this._renderProjDefs(); };
       box.appendChild(row);
     });

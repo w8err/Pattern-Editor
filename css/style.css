@@ -105,7 +105,7 @@ textarea{width:100%;resize:vertical}
 .sec-hd:first-child{margin-top:0}
 .sec-hd.dim{color:var(--dim)}
 .rowline{display:flex;align-items:center;gap:6px;margin:4px 0}
-.rowline .grow{flex:1}
+.rowline .grow{flex:0 1 130px;min-width:70px}   /* 이름칸: 폭 채우지 말고 필요한 만큼만(왼쪽 정렬, 오른쪽 비움) */
 .rowline input{width:auto}
 .unit{color:var(--dim);font-size:11px}
 .pidx{color:var(--accent);font-weight:600;width:24px}
@@ -153,10 +153,11 @@ textarea{width:100%;resize:vertical}
 
 /* ⑥ BT 표 */
 .bt-wrap{overflow-x:auto;margin:4px 0 10px}
-.bt-table{border-collapse:collapse;font-size:11px;width:100%}
+.bt-table{border-collapse:collapse;font-size:11px;width:auto;max-width:100%}   /* 표를 폭에 꽉 채우지 않음(왼쪽 정렬, 필요한 만큼만) */
 .bt-table th{background:var(--bg3);color:var(--dim);font-weight:600;padding:4px 6px;border:1px solid var(--line);white-space:nowrap;position:sticky;top:0}
 .bt-table td{padding:2px 4px;border:1px solid var(--line);vertical-align:middle}
-.bt-table select,.bt-table input{font-size:11px;padding:2px 3px;width:100%;min-width:0}
+.bt-table select,.bt-table input{font-size:11px;padding:2px 3px;width:100%;min-width:52px}
+.bt-table input.bt-desc{min-width:120px}   /* 설명칸은 조금 더 넓게 */
 .bt-i{text-align:center;color:var(--dim)}
 .bt-cd{text-align:center;color:var(--dim)}
 .bt-act{white-space:nowrap}

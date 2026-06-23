@@ -11,7 +11,8 @@ export const MODES          = ['공격', '수비', '특수'];
 // '복합'은 타입이 아니라 모든 이벤트의 플래그(composite)로 표현.
 export const EVENT_TYPES    = ['대기', '추적', '공격', '걷기', '대쉬', '순간이동', '투사체', '지형', '몸회전', '모드전환', '음표카운터', '공격각도', '회복'];
 // 투사체 발사 방향 모드. 유저조준=발사 순간 유저 위치. 랜덤360=무작위 전방위. 균일360=count발 균등 전방위. 공격각도내 랜덤=부채꼴 안 무작위.
-export const PROJ_DIRS       = ['직선', '유저조준', '랜덤360', '균일360', '공격각도내 랜덤', '커스텀'];
+// 궤적=마우스로 그린 곡선(projPath)을 따라 비행. 곡선 시작점=생성위치, 시작 방향=발사방향. +x=발사 순간 유저 방향으로 곡선 전체 회전.
+export const PROJ_DIRS       = ['직선', '유저조준', '랜덤360', '균일360', '공격각도내 랜덤', '궤적'];
 export const TELEPORT_DEST  = ['유저로부터 랜덤', '유저 위치', '맵 랜덤']; // 순간이동 도착지
 export const MODE_SWITCH    = ['토글', '공격', '수비']; // 모드전환 대상
 export const TERRAIN_TYPES  = ['지진', '둔화', '용암'];
@@ -60,6 +61,7 @@ export function newEntity(kind = 'monster') {
     hp: 1000,             // 엔티티 총 체력(페이즈 유무와 무관하게 설정)
     size: 0.6,            // 반경(m) — 2D 원형
     rotationSpeed: 360,   // deg/s
+    color: isBoss ? '#f0883e' : '#3fb950', // 폰 색(시뮬레이터 렌더)
     description: '',       // 설명 텍스트(보스·몬스터 공통)
     // 가변 거리밴드: min~max(m) 구간. 예: 0~3, 3~6 …
     distanceBands: [
@@ -82,7 +84,7 @@ export function newEntity(kind = 'monster') {
 
 // 투사체/지형 "종류" 정의 (엔티티 레벨에 저장, 이벤트가 defId로 참조)
 export function newProjectileDef() {
-  return { id: uid(), name: '새 투사체', damage: 50, speed: 12, lifetime: 1.5, homing: 0 };
+  return { id: uid(), name: '새 투사체', damage: 50, speed: 12, lifetime: 1.5, homing: 0, size: 0.3, color: '#f0883e' };
 }
 export function newTerrainDef() {
   return { id: uid(), name: '새 지형', terrain: '둔화', size: 4, duration: 4 };
@@ -126,7 +128,8 @@ export function newEvent(type = '대기') {
       // 종류(피해/속도/소멸/호밍)는 defId로 참조. 이벤트엔 발사 방식만.
       Object.assign(ev, {
         defId: null, count: 1, interval: 0,          // interval>0 이면 count발을 간격마다 연사
-        dir: '직선', customSpawns: null,             // [{x,y,angle}]
+        dir: '직선',
+        projPath: null,                              // dir='궤적'일 때 따라갈 곡선 [{x,y}](원점 상대, +x=유저방향)
         expireAction: '없음', expireAttackEventId: null,
       });
       break;
@@ -193,10 +196,12 @@ function migrate(data) {
   data.distanceBands ??= [];
   data.projectiles ??= [];
   data.terrains ??= [];
-  // v1 보강: 설명/체력/거리밴드 min
+  // v1 보강: 설명/체력/거리밴드 min/색
   data.description ??= '';
   if (data.hp == null) data.hp = data.phases.reduce((s, p) => s + (p.hp || 0), 0) || 1000;
+  data.color ??= (data.kind === 'boss' ? '#f0883e' : '#3fb950'); // 폰 색 보강
   for (const b of data.distanceBands) b.min ??= 0;
+  for (const d of data.projectiles) { d.size ??= 0.3; d.color ??= '#f0883e'; } // 투사체 크기·색 보강
   // 패턴: 공격/이동 분류 제거, 이벤트 composite/sub 보강
   for (const p of data.patterns) {
     delete p.type;
@@ -224,6 +229,11 @@ function normalizeEvent(ev) {
   if (typeof ev.composite !== 'boolean') ev.composite = false;
   ev.sub ??= [];
   if (ev.type === '걷기') { delete ev.inclusive; delete ev.exclusive; ev.speed ??= 4; ev.side ??= false; }
+  if (ev.type === '투사체') { // 커스텀 폐지 → 궤적으로 일원화
+    if (ev.dir === '커스텀') ev.dir = '직선';
+    delete ev.customSpawns;
+    ev.projPath ??= null;
+  }
   for (const s of ev.sub) { if (typeof s.composite !== 'boolean') s.composite = false; s.sub ??= []; }
   return ev;
 }

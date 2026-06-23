@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "id": "bd170acb-5e58-491b-a87a-d43b32d0da08",
-  "name": "황야 소형-원거리",
+  "id": "fe1d80c2-9e32-4880-8fe5-b50a4f89e893",
+  "name": "황야 중형",
   "kind": "monster",
   "hp": 1000,
   "size": 0.6,
@@ -31,7 +31,16 @@
       "transitionPatternId": null
     }
   ],
-  "projectiles": [],
+  "projectiles": [
+    {
+      "id": "f2fd404e-147e-4647-a123-db72403bfd9d",
+      "name": "부메랑",
+      "damage": 50,
+      "speed": 12,
+      "lifetime": 1.5,
+      "homing": 0
+    }
+  ],
   "terrains": [],
   "patterns": [],
   "bt": []

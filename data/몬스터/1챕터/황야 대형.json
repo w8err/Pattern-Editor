@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "id": "42f25a8f-4357-482c-b823-3cd16bf635d9",
-  "name": "황야 엘리트 중형",
+  "id": "b82cc42c-f19b-4575-88c5-e9cfd09ed595",
+  "name": "황야 대형",
   "kind": "monster",
   "hp": 1000,
-  "size": 0.6,
+  "size": 0.7,
   "rotationSpeed": 360,
   "description": "",
   "distanceBands": [
@@ -34,5 +34,6 @@
   "projectiles": [],
   "terrains": [],
   "patterns": [],
-  "bt": []
+  "bt": [],
+  "color": "#9c5454"
 }

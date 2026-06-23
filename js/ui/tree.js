@@ -27,6 +27,9 @@ export class TreeView {
 
   setRoot(node) { this.rootNode = node; this.dirtyKey = null; this.selected = null; this.expanded.add(this._key(node)); this.render(); }
 
+  // 선택을 특정 노드로 되돌림(미저장 보호로 이동 취소 시) — 선택 하이라이트만 복원, onSelectFile은 안 부름
+  reselect(node) { this.selected = node; this.render(); }
+
   _key(node) { // 경로 키(이름 체인) — 펼침 상태 보존용
     const seg = []; let n = node;
     while (n) { seg.unshift(n.name); n = n.parent; }
