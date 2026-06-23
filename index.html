@@ -18,11 +18,25 @@
 <div id="app">
   <aside id="sidebar">
     <div class="side-toolbar">
-      <button id="btn-newfolder" class="btn mini" title="새 폴더">📁＋</button>
-      <button id="btn-newboss" class="btn mini" title="새 보스">👑＋</button>
-      <button id="btn-newmonster" class="btn mini" title="새 몬스터">👾＋</button>
-      <button id="btn-newuser" class="btn mini" title="새 유저">👤＋</button>
-      <button id="btn-del" class="btn mini" title="삭제">🗑</button>
+      <div class="tb-group">
+        <button id="btn-create" class="btn tb-main" disabled>＋ 데이터 생성</button>
+        <div class="tb-flyout" id="create-menu" hidden>
+          <button id="btn-newfolder" class="btn mini" title="새 폴더">📁</button>
+          <button id="btn-newboss" class="btn mini" title="새 보스">👑</button>
+          <button id="btn-newmonster" class="btn mini" title="새 몬스터">👾</button>
+          <button id="btn-newuser" class="btn mini" title="새 유저">👤</button>
+        </div>
+        <button id="btn-del" class="btn mini tb-del" title="선택 삭제" disabled>🗑</button>
+      </div>
+      <div class="tb-group">
+        <button id="btn-userdata" class="btn tb-main">👤 유저 데이터</button>
+        <div class="tb-flyout" id="userdata-menu" hidden>
+          <button id="btn-user-ai" class="seg" title="AI로 조종">🤖 AI</button>
+          <button id="btn-user-manual" class="seg" title="수동 조종 (WASD·마우스·스페이스)">🎮 수동</button>
+          <button id="btn-user-edit" class="seg" title="유저 옵션 편집 (폴더 없이 저장)">✎ 편집</button>
+          <select id="pb-userdef" class="seg-sel" title="유저 데이터(스펙)"><option value="">기본(하루)</option></select>
+        </div>
+      </div>
     </div>
     <div id="tree" class="tree"><div class="tree-empty">폴더를 열어주세요</div></div>
   </aside>

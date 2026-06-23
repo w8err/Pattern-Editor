@@ -8,11 +8,12 @@ import { PatternEditor } from './patterns.js';
 import { BTEditor } from './bt.js';
 
 export class Inspector {
-  constructor(el, { onSave, onEntityLoad, onPatternSelect }) {
+  constructor(el, { onSave, onEntityLoad, onPatternSelect, onDirtyChange }) {
     this.el = el;
     this.onSave = onSave;
     this.onEntityLoad = onEntityLoad;
     this.onPatternSelect = onPatternSelect;
+    this.onDirtyChange = onDirtyChange;
     this.entity = null;
     this.fileNode = null;
     this.dirty = false;
@@ -24,10 +25,11 @@ export class Inspector {
     this.fileNode = fileNode;
     this.dirty = false;
     this.render();
+    this.onDirtyChange?.(fileNode, false); // 새 파일 로드 → 이전 미저장 표시 해제
     if (entity.kind !== 'user') this.onEntityLoad?.(entity); // 유저는 플레이백 보스로 안 올림(AI는 별도 선택)
   }
 
-  _mark() { this.dirty = true; this._updateSaveBtn(); }
+  _mark() { const was = this.dirty; this.dirty = true; this._updateSaveBtn(); if (!was) this.onDirtyChange?.(this.fileNode, true); }
   _refreshBT() { this.btEditor?.render(); this.bt2Editor?.render(); } // 거리밴드/페이즈 변경 → BT 드롭다운 갱신
   _updateSaveBtn() {
     const b = this.el.querySelector('#insp-save');
@@ -258,6 +260,7 @@ export class Inspector {
     if (!this.entity || !this.fileNode) return;
     await this.onSave?.(this.entity, this.fileNode);
     this.dirty = false; this._updateSaveBtn();
+    this.onDirtyChange?.(this.fileNode, false);
   }
 }
 

@@ -24,6 +24,7 @@ export class Playback {
     this.user = { x: 5, y: 0 }; this._hist = [];
     this.userAI = false; this._ai = null; this._users = []; this._userSel = ''; this._defaultUser = newUser(); // 유저 AI
     this.userManual = false; this._keys = {}; this._mouseW = null; // 유저 수동 조작(WASD·마우스 조준·스페이스 대쉬)
+    this.onEditDefaultUser = null; // ✎ 버튼 → main이 인스펙터로 기본 유저 편집 연결
     this._weaponFx = null; // 무기 교체 이펙트
     this.repeatN = null; this._expCache = null; // 단일 모드 반복 펼치기 횟수/캐시
     this._singleNotes = 0; this._noteScanSingle = 0; // 단일 재생 중 누적 음표
@@ -32,6 +33,7 @@ export class Playback {
     this.bt = null;
     this._raf = null; this._last = 0;
     this._buildControls();
+    this._bindUserControls();
     this._bindCanvas();
     this.resize();
     window.addEventListener('resize', () => this.resize());
@@ -93,10 +95,6 @@ export class Playback {
         <select id="pb-field"><option>10</option><option selected>20</option><option>30</option></select>
         <span class="dim" style="font-size:11px">m²</span>
         <span id="pb-rep-wrap" style="display:none"><span class="sp"></span><span class="dim" style="font-size:11px">반복</span> <input id="pb-rep" type="number" min="1" value="1" style="width:44px"></span>
-        <span class="sp"></span>
-        <button class="seg" id="pb-ai">🤖 AI 유저</button>
-        <button class="seg" id="pb-manual" title="WASD 이동 · 마우스 조준 · 스페이스 대쉬">🎮 수동</button>
-        <select id="pb-userdef" title="유저 데이터(스펙)"><option value="">기본(하루)</option></select>
       </div>`;
     const C = this.controls;
     C.querySelectorAll('[data-mode]').forEach((b) => b.onclick = () => this._setMode(b.dataset.mode));
@@ -116,18 +114,27 @@ export class Playback {
       this.repeatN = n; e.target.value = n; this._expCache = null; this.t = 0;
       this.pause(); this._refreshControls(); this.render();
     };
-    C.querySelector('#pb-ai').onclick = (e) => {
-      this.userAI = !this.userAI; e.target.classList.toggle('on', this.userAI);
-      if (this.userAI) { this.userManual = false; C.querySelector('#pb-manual').classList.remove('on'); this._resetAI(); }
-      this.render();
-    };
-    C.querySelector('#pb-manual').onclick = (e) => {
-      this.userManual = !this.userManual; e.target.classList.toggle('on', this.userManual);
-      if (this.userManual) { this.userAI = false; C.querySelector('#pb-ai').classList.remove('on'); this._keys = {}; this._resetAI(); }
-      this.render();
-    };
-    C.querySelector('#pb-userdef').onchange = (e) => { this._userSel = e.target.value; this._resetAI(); };
     this.scrub.oninput = (e) => { this.t = +e.target.value; if (this.mode === 'single') this.render(); };
+  }
+  // 유저 데이터 컨트롤(사이드바). 토글식 — 같은 버튼 재클릭 시 끔. AI·수동 상호 배타.
+  _bindUserControls() {
+    const ai = document.querySelector('#btn-user-ai');
+    const man = document.querySelector('#btn-user-manual');
+    const edit = document.querySelector('#btn-user-edit');
+    const sel = document.querySelector('#pb-userdef');
+    this._uAiBtn = ai; this._uManBtn = man;
+    if (ai) ai.onclick = () => this._setUserMode('ai');
+    if (man) man.onclick = () => this._setUserMode('manual');
+    if (edit) edit.onclick = () => this.onEditDefaultUser?.();
+    if (sel) sel.onchange = (e) => { this._userSel = e.target.value; this._resetAI(); };
+  }
+  _setUserMode(mode) {
+    if (mode === 'ai') { this.userAI = !this.userAI; this.userManual = false; }
+    else if (mode === 'manual') { this.userManual = !this.userManual; this.userAI = false; }
+    if (this.userAI || this.userManual) { this._keys = {}; this._resetAI(); }
+    this._uAiBtn?.classList.toggle('on', this.userAI);
+    this._uManBtn?.classList.toggle('on', this.userManual);
+    this.render();
   }
   _refreshControls() {
     const dur = this._singlePat()?.duration || this.pattern?.duration || 1;
@@ -199,7 +206,7 @@ export class Playback {
   // ── 유저 AI(컨텍스트 스티어링 + 위험맵 + 노이즈) ──
   setUsers(list) {
     this._users = list || [];
-    const sel = this.controls.querySelector('#pb-userdef'); if (!sel) return;
+    const sel = document.querySelector('#pb-userdef'); if (!sel) return;
     const cur = this._userSel;
     sel.innerHTML = `<option value="">기본(하루)</option>` + this._users.map((u) => `<option value="${esc(u.name)}">${esc(u.name)}</option>`).join('');
     if (this._users.some((u) => u.name === cur)) sel.value = cur; else { this._userSel = ''; sel.value = ''; }
@@ -208,6 +215,8 @@ export class Playback {
     const u = this._users.find((x) => x.name === this._userSel);
     return u ? u.data : this._defaultUser;
   }
+  // 기본 유저(하루) 스펙 교체 — main이 localStorage에서 로드/저장 후 주입
+  setDefaultUser(data) { if (data) this._defaultUser = data; this.render(); }
   _resetAI() {
     const def = this._activeUserDef();
     const phases = []; for (let i = 0; i < 16; i++) phases.push(Math.random() * Math.PI * 2);

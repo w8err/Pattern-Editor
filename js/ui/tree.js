@@ -12,9 +12,19 @@ export class TreeView {
     this.rootNode = null;
     this.selected = null;     // 선택된 node(dir 또는 file)
     this.expanded = new Set(); // 펼쳐진 dir 핸들 name 경로
+    this.dirtyKey = null;      // 미저장 변경이 있는 파일 경로키(1개) — 빨간 느낌표
   }
 
-  setRoot(node) { this.rootNode = node; this.expanded.add(this._key(node)); this.render(); }
+  // 인스펙터의 미저장 상태 반영(파일 1개만 열려 편집되므로 단일 키로 충분)
+  setDirty(node, dirty) {
+    const key = node && node.parent ? this._key(node) : null; // 가상 노드(기본 유저)는 무시
+    const next = dirty ? key : null;
+    if (next === this.dirtyKey) return;
+    this.dirtyKey = next;
+    this.render();
+  }
+
+  setRoot(node) { this.rootNode = node; this.dirtyKey = null; this.selected = null; this.expanded.add(this._key(node)); this.render(); }
 
   _key(node) { // 경로 키(이름 체인) — 펼침 상태 보존용
     const seg = []; let n = node;
@@ -69,7 +79,8 @@ export class TreeView {
         this.render();
       };
     } else {
-      row.innerHTML = `<span class="tw"></span><span class="ti">📄</span><span class="tn">${esc(node.name.replace(/\.json$/, ''))}</span>`;
+      const dirty = this.dirtyKey && this._key(node) === this.dirtyKey;
+      row.innerHTML = `<span class="tw"></span><span class="ti">📄${dirty ? '<i class="dirty-badge">!</i>' : ''}</span><span class="tn">${esc(node.name.replace(/\.json$/, ''))}</span>`;
       row.onclick = (e) => {
         e.stopPropagation();
         this.selected = node;
@@ -118,6 +129,7 @@ export class TreeView {
   async deleteSelected() {
     const n = this.selected;
     if (!n || n === this.rootNode) return;
+    if (n.web) { return; } // 웹(배포 데이터)은 삭제 불가
     const isDir = n.kind === 'dir';
     if (!confirm(`${isDir ? '폴더' : '파일'} "${n.name}" 삭제?${isDir ? ' (안의 내용 전부)' : ''}`)) return;
     await store.removeEntry(n.parent.handle, n.name, isDir);

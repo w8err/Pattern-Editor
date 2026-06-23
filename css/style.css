@@ -32,7 +32,14 @@ body{background:var(--bg);color:var(--fg);font:13px/1.45 "Segoe UI",system-ui,sa
 .col-rsz{position:absolute;right:0;top:0;width:6px;height:100%;cursor:col-resize;user-select:none}
 .col-rsz:hover{background:var(--accent)}
 #sidebar{width:280px;background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0}
-.side-toolbar{display:flex;gap:4px;padding:6px;border-bottom:1px solid var(--line)}
+.side-toolbar{display:flex;flex-direction:column;gap:6px;padding:8px;border-bottom:1px solid var(--line)}
+.tb-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tb-main{flex-shrink:0;font-weight:600}
+.tb-main.open{background:#1f6feb;border-color:#1f6feb}
+.tb-del{margin-left:auto}
+.tb-flyout{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:2px 4px;background:var(--bg);border:1px solid var(--line);border-radius:6px}
+.tb-flyout[hidden]{display:none}
+.seg-sel{padding:3px 4px;font-size:11px;background:var(--bg3);color:var(--fg);border:1px solid var(--line);border-radius:5px}
 .tree{flex:1;overflow:auto;padding:4px 0;user-select:none}
 .tree-empty{color:var(--dim);padding:14px;text-align:center}
 
@@ -41,7 +48,12 @@ body{background:var(--bg);color:var(--fg);font:13px/1.45 "Segoe UI",system-ui,sa
 .tree-row:hover{background:var(--bg3)}
 .tree-row.sel{background:#1f6feb33;outline:1px solid #1f6feb88}
 .tree-row .tw{width:12px;color:var(--dim);font-size:11px}
+.tree-row .ti{position:relative;display:inline-block;line-height:1}
 .tree-row .tn{overflow:hidden;text-overflow:ellipsis}
+/* 미저장 변경 표시: 아이콘 우하단 빨간 느낌표 */
+.dirty-badge{position:absolute;right:-5px;bottom:-4px;width:12px;height:12px;display:flex;align-items:center;justify-content:center;
+  font-style:normal;font-weight:900;font-size:9px;line-height:1;color:#fff;background:var(--danger);border-radius:50%;box-shadow:0 0 0 1.5px var(--bg2)}
+.tree-row.sel .dirty-badge{box-shadow:0 0 0 1.5px #1b2740}
 
 /* 인스펙터 */
 .inspector{flex:1;overflow:auto;padding:0;min-width:340px}
@@ -62,21 +74,28 @@ body{background:var(--bg);color:var(--fg);font:13px/1.45 "Segoe UI",system-ui,sa
 .pb-hud b{color:var(--fg)}
 .hud-t{color:var(--accent);font-weight:600}
 .insp-empty{color:var(--dim);padding:30px;text-align:center}
-.insp-hd{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1}
+.inspector{background:var(--bg)}
+.insp-hd{display:flex;align-items:center;gap:8px;padding:8px 12px;background:linear-gradient(180deg,var(--bg3),var(--bg2));border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
 .in-name{flex:1;font-size:15px;font-weight:600;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
 .badge{font-size:11px;padding:2px 7px;border-radius:10px;font-weight:600}
 .badge.boss{background:#f0883e22;color:var(--boss);border:1px solid var(--boss)}
 .badge.monster{background:#3fb95022;color:var(--mon);border:1px solid var(--mon)}
-.insp-body{padding:14px}
+.badge.user{background:#22d3ee22;color:#22d3ee;border:1px solid #22d3ee}
+.insp-body{padding:0 12px 16px}
 
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px}
+/* 유니티 스타일: 라벨 좌측 / 값 우측, 단일 컬럼, 행 제브라 */
+.grid2,.grid3{display:grid;grid-template-columns:1fr;gap:0;margin:0 -12px 2px}
+.grid2>label,.grid3>label{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;padding:4px 12px;font-size:12px;color:var(--dim)}
+.grid2>label:nth-child(odd),.grid3>label:nth-child(odd){background:#ffffff05}
+.grid2>label:hover,.grid3>label:hover{background:#ffffff0d}
+.grid2>label>input,.grid3>label>input,.grid2>label>select,.grid3>label>select{flex:0 0 46%;width:46%;text-align:right;padding:3px 7px}
 label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--dim)}
 input,textarea,select{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:5px;padding:5px 7px;font:inherit}
 input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent)}
 textarea{width:100%;resize:vertical}
 
-.sec-hd{margin:16px 0 6px;font-size:12px;font-weight:600;color:var(--fg);border-bottom:1px solid var(--line);padding-bottom:4px;display:flex;align-items:center;gap:8px}
+.sec-hd{margin:12px -12px 4px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--fg);background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.sec-hd:first-child{margin-top:0}
 .sec-hd.dim{color:var(--dim)}
 .rowline{display:flex;align-items:center;gap:6px;margin:4px 0}
 .rowline .grow{flex:1}
@@ -100,7 +119,7 @@ textarea{width:100%;resize:vertical}
 .pat-detail{margin:8px 0 4px;padding:10px;background:var(--bg2);border:1px solid var(--line);border-radius:8px}
 .pat-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .pat-meta .grow{flex:1;min-width:120px;font-weight:600}
-.sec-hd.sub{margin:12px 0 6px;font-size:11px}
+.sec-hd.sub{margin:12px 0 6px;padding:0 0 4px;font-size:11px;font-weight:600;background:none;border-top:none;border-bottom:1px solid var(--line)}
 .ef{flex-direction:row;align-items:center;gap:4px;color:var(--dim);font-size:11px}
 .ef input[type=number]{width:62px}
 .ef input[type=checkbox]{width:auto}

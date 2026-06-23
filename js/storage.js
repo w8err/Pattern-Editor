@@ -40,6 +40,59 @@ export async function getSavedRoot() {
   try { return (await idbGet(IDB_KEY)) || null; } catch { return null; }
 }
 
+// ── 기본 유저 데이터(폴더 없이 편집) — localStorage 보존 ───
+//  파일/FSA 없이도 수정·저장 가능. 이 브라우저에만 보존됨.
+const LS_DEFAULT_USER = 'bb-editor:default-user';
+export function loadDefaultUserRaw() {
+  try { return localStorage.getItem(LS_DEFAULT_USER); } catch { return null; }
+}
+export function saveDefaultUser(text) {
+  try { localStorage.setItem(LS_DEFAULT_USER, text); return true; } catch { return false; }
+}
+export function resetDefaultUser() {
+  try { localStorage.removeItem(LS_DEFAULT_USER); } catch {}
+}
+
+// ── 웹(정적 호스팅) 데이터 소스 — fetch 읽기 전용 ───
+//  배포 사이트의 data/manifest.json + 각 .json 을 읽어 트리 구성.
+//  편집/저장은 불가(서버에 못 씀) → 편집분은 localStorage 오버레이로 이 브라우저에만 보존.
+export async function fetchManifest() {
+  try { const r = await fetch('data/manifest.json', { cache: 'no-cache' }); if (!r.ok) return null; return await r.json(); }
+  catch { return null; }
+}
+const encPath = (p) => p.split('/').map(encodeURIComponent).join('/');
+export async function fetchEntity(path) {
+  const r = await fetch('data/' + encPath(path));
+  if (!r.ok) throw new Error('불러오기 실패: ' + path);
+  return await r.json();
+}
+// manifest → 트리(node.web=true, handle 없음). file 노드엔 path·entKind 보존.
+export function buildTreeFromManifest(manifest, rootName = '📦 배포 데이터') {
+  const root = { name: rootName, kind: 'dir', web: true, parent: null, children: [] };
+  for (const f of manifest.files || []) {
+    const parts = f.path.split('/'); let cur = root;
+    for (let i = 0; i < parts.length - 1; i++) {
+      let d = cur.children.find((c) => c.kind === 'dir' && c.name === parts[i]);
+      if (!d) { d = { name: parts[i], kind: 'dir', web: true, parent: cur, children: [] }; cur.children.push(d); }
+      cur = d;
+    }
+    cur.children.push({ name: parts[parts.length - 1], kind: 'file', web: true, path: f.path, entKind: f.kind, parent: cur });
+  }
+  const sort = (n) => { n.children?.sort((a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name, 'ko') : a.kind === 'dir' ? -1 : 1)); n.children?.forEach(sort); };
+  sort(root);
+  return root;
+}
+
+// 웹 보기 모드의 편집 오버레이(localStorage) — path별 직렬화 텍스트. 공유 안 됨.
+const LS_WEB_EDITS = 'bb-editor:web-edits';
+export function loadWebEdits() { try { return JSON.parse(localStorage.getItem(LS_WEB_EDITS) || '{}'); } catch { return {}; } }
+export function saveWebEdit(path, text) {
+  const m = loadWebEdits(); m[path] = text;
+  try { localStorage.setItem(LS_WEB_EDITS, JSON.stringify(m)); return true; } catch { return false; }
+}
+export function hasWebEdits() { try { return Object.keys(loadWebEdits()).length > 0; } catch { return false; } }
+export function clearWebEdits() { try { localStorage.removeItem(LS_WEB_EDITS); } catch {} }
+
 // ── 권한 ─────────────────────────────────────────
 export async function verifyPermission(handle, write = true) {
   const opts = { mode: write ? 'readwrite' : 'read' };
@@ -62,7 +115,7 @@ export async function buildTree(dirHandle, parent = null) {
   const dirs = [], files = [];
   for await (const [name, h] of dirHandle.entries()) {
     if (h.kind === 'directory') dirs.push(h);
-    else if (name.endsWith('.json')) files.push(h);
+    else if (name.endsWith('.json') && name !== 'manifest.json') files.push(h); // manifest는 엔티티 아님
   }
   dirs.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
   files.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
