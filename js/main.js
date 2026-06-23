@@ -16,23 +16,92 @@ const playback = new Playback({
 });
 
 const tree = new TreeView($('#tree'), {
+  // 파일 전환은 막지 않는다. 각 파일의 편집(미저장) 상태는 메모리 캐시에 그대로 보존되고,
+  // 저장은 상단 "💾 전체 저장"(또는 Ctrl+S)으로 한꺼번에 한다.
   onSelectFile: async (node) => {
     if (node === inspector.fileNode) return; // 이미 열려있는 파일 → 재로딩으로 편집 날리지 않음
-    // 미저장 변경 보호: 다른 파일로 이동 시 경고(취소 시 현재 파일·편집 유지)
-    if (inspector.dirty && inspector.fileNode) {
-      const ok = confirm('저장하지 않은 변경이 있습니다.\n\n확인 = 저장 후 이동\n취소 = 현재 파일에 머무름(편집 유지)');
-      if (!ok) { tree.reselect(inspector.fileNode); return; }
-      await inspector.save();
-    }
+    const key = nodeKey(node);
     try {
-      const data = await readEntity(node);
-      inspector.load(model.deserialize(JSON.stringify(data)), node);
+      let meta = entityCache.get(key);
+      if (!meta) {
+        const data = await readEntity(node);
+        meta = { entity: model.deserialize(JSON.stringify(data)), node };
+        entityCache.set(key, meta);
+      } else {
+        meta.node = node; // 트리 재생성으로 노드 객체가 새로 생긴 경우 최신화
+      }
+      const wasDirty = dirtyKeys.has(key);
+      inspector.load(meta.entity, node);
+      if (wasDirty) inspector.markDirty(); // 캐시에 남아있던 미저장 상태 복원
     } catch (err) {
       toast('파일 읽기 실패: ' + err.message, true);
     }
   },
   onChange: () => syncManifest(), // 생성/삭제 후 manifest 자동 갱신
 });
+
+// ── 다중 파일 편집 세션: 편집 상태를 메모리에 보존 ──────────────
+//  entityCache: 노드별 엔티티(편집중 객체)를 들고 있어 파일 전환에도 편집이 사라지지 않음.
+//  dirtyKeys  : 미저장 파일 키 집합. 전체 저장 대상이자 저장 버튼 카운트의 출처.
+const entityCache = new Map(); // key -> { entity, node }
+const dirtyKeys = new Set();   // 미저장 노드 키
+
+// 트리 재생성에도 안정적인 노드 식별 키(경로 기반).
+function nodeKey(node) {
+  if (!node) return null;
+  if (node.virtual) return 'v:' + node.virtual;
+  if (node.web) return 'w:' + node.path;
+  const parts = []; for (let n = node; n; n = n.parent) parts.unshift(n.name);
+  return 'l:' + parts.join('/');
+}
+function rememberOpen(entity, node) { const k = nodeKey(node); if (k) entityCache.set(k, { entity, node }); }
+function resetSession() { entityCache.clear(); dirtyKeys.clear(); updateSaveAllUI(); } // 모드/폴더 전환 시 초기화
+
+// 엔티티 1개를 실제 저장소에 기록(refresh/toast 없음). 저장 종류 문자열 반환.
+async function persistEntityCore(entity, node) {
+  if (node?.virtual === 'default-user') {
+    store.saveDefaultUser(model.serialize(entity));
+    playback.setDefaultUser(defaultUserEntity());
+    return 'user';
+  }
+  if (node?.web) {
+    store.saveWebEdit(node.path, model.serialize(entity));
+    return 'web';
+  }
+  const fh = await store.renameFile(node.parent.handle, node.name, entity.name, model.serialize(entity));
+  node.name = fh.name; // 이름 변경 시 파일명 동기화(재저장 안전)
+  return 'local';
+}
+
+// 편집한 모든 파일을 한 번에 저장.
+async function saveAll() {
+  if (!dirtyKeys.size) { toast('저장할 변경이 없습니다'); return; }
+  const kinds = new Set(); let ok = 0;
+  for (const key of [...dirtyKeys]) {
+    const meta = entityCache.get(key);
+    if (!meta) { dirtyKeys.delete(key); continue; }
+    try {
+      kinds.add(await persistEntityCore(meta.entity, meta.node));
+      dirtyKeys.delete(key); tree.setDirty(meta.node, false); ok++;
+    } catch (err) {
+      toast(`저장 실패(${meta.entity?.name || '?'}): ${err.message}`, true);
+    }
+  }
+  if (kinds.has('local')) { await tree.refresh(); await syncManifest(); }
+  if (kinds.has('web')) refreshModeUI('web');
+  await refreshUsers();
+  if (inspector.fileNode && !dirtyKeys.has(nodeKey(inspector.fileNode))) inspector.setClean();
+  updateSaveAllUI();
+  if (ok) toast(`전체 저장 완료 (${ok}개)`);
+}
+
+// 전체 저장 버튼/카운트 갱신.
+function updateSaveAllUI() {
+  const n = dirtyKeys.size;
+  const btn = $('#btn-saveall');
+  if (btn) { btn.disabled = !n; btn.textContent = n ? `💾 전체 저장 (${n})` : '💾 저장됨'; }
+  inspector.setSaveAllCount?.(n);
+}
 
 // 로컬(소유자) 폴더의 data/manifest.json을 실제 트리에 맞춰 다시 씀.
 //  파일 생성/삭제/이름변경 때마다 호출 → '수동 gen-manifest 깜빡' 사고 방지.
@@ -44,37 +113,29 @@ async function syncManifest() {
 }
 
 const inspector = new Inspector($('#inspector'), {
+  // 단일 저장(내부용). 평소 저장은 onSaveAll(전체 저장)로 처리한다.
   onSave: async (entity, fileNode) => {
     try {
-      // 기본 유저(가상 노드): 파일 없이 localStorage에 보존
-      if (fileNode?.virtual === 'default-user') {
-        store.saveDefaultUser(model.serialize(entity));
-        playback.setDefaultUser(defaultUserEntity());
-        toast('기본 유저 저장됨 (이 브라우저에 보존)');
-        return;
-      }
-      // 웹 보기 모드: 서버에 못 쓰므로 이 브라우저(localStorage)에만 임시 저장
-      if (fileNode?.web) {
-        store.saveWebEdit(fileNode.path, model.serialize(entity));
-        await refreshUsers();
-        refreshModeUI('web');
-        toast('이 브라우저에 임시 저장됨 (공유 안 됨)');
-        return;
-      }
-      // 이름이 바뀌면 파일명도 동기화(rename)
-      const text = model.serialize(entity);
-      await store.renameFile(fileNode.parent.handle, fileNode.name, entity.name, text);
-      await tree.refresh();
-      await syncManifest();   // 이름 변경 시 manifest의 path·name 동기화
-      await refreshUsers();   // 유저 데이터 변경 반영(AI 드롭다운)
+      const kind = await persistEntityCore(entity, fileNode);
+      if (kind === 'local') { await tree.refresh(); await syncManifest(); }
+      if (kind === 'web') refreshModeUI('web');
+      await refreshUsers();
+      const k = nodeKey(fileNode); if (k) dirtyKeys.delete(k);
+      updateSaveAllUI();
       toast('저장됨: ' + entity.name);
     } catch (err) {
       toast('저장 실패: ' + err.message, true);
     }
   },
+  onSaveAll: () => saveAll(),
   onEntityLoad: (entity) => playback.setEntity(entity),
   onPatternSelect: (pattern) => playback.setPattern(pattern),
-  onDirtyChange: (fileNode, dirty) => tree.setDirty(fileNode, dirty), // 미저장 표시
+  onDirtyChange: (fileNode, dirty) => {
+    const k = nodeKey(fileNode);
+    if (k) { if (dirty) dirtyKeys.add(k); else dirtyKeys.delete(k); }
+    tree.setDirty(fileNode, dirty); // 미저장 표시
+    updateSaveAllUI();
+  },
 });
 
 // ── 기본 유저(하루): 폴더 없이 편집 가능, localStorage 보존 ──
@@ -87,7 +148,10 @@ function defaultUserEntity() {
 }
 playback.setDefaultUser(defaultUserEntity());
 playback.onEditDefaultUser = () => {
-  inspector.load(defaultUserEntity(), { virtual: 'default-user', name: '기본 유저' });
+  const node = { virtual: 'default-user', name: '기본 유저' };
+  const entity = defaultUserEntity();
+  rememberOpen(entity, node);
+  inspector.load(entity, node);
 };
 
 // ── 모드 세그먼트(배포/로컬) ──────────────────────
@@ -103,6 +167,7 @@ $('#btn-web-reset').onclick = async () => {
 };
 
 // ── 툴바 ─────────────────────────────────────────
+$('#btn-saveall').onclick = saveAll;
 $('#btn-open').onclick = openFolder;
 $('#btn-newfolder').onclick = () => tree.newFolder();
 $('#btn-newboss').onclick = () => tree.newEntity('boss');
@@ -143,6 +208,7 @@ let localHandle = null;    // 현재/마지막으로 연 로컬 폴더 핸들
 
 // 모드 전환의 단일 진입점. 세그먼트 버튼·부팅·초기화에서 모두 이걸 호출.
 async function setMode(mode) {
+  resetSession(); // 모드 전환 시 편집 캐시/미저장 초기화(데이터 소스가 바뀜)
   if (mode === 'web') {
     const ok = await tryLoadWeb();
     if (!ok) { toast('배포 데이터를 불러올 수 없습니다 (data/manifest.json 없음)', true); refreshModeUI('local'); return; }
@@ -156,6 +222,7 @@ async function setMode(mode) {
 
 async function mountRoot(handle) {
   if (!(await store.verifyPermission(handle, true))) { toast('폴더 권한이 필요합니다', true); return; }
+  resetSession(); // 폴더(루트) 전환 시 편집 캐시 초기화
   const node = await store.buildTree(handle, null);
   webMode = false; localHandle = handle;
   tree.setRoot(node);
@@ -258,12 +325,11 @@ function toast(msg, err = false) {
   toastTimer = setTimeout(() => (t.className = 'toast'), 2600);
 }
 
-// ── 단축키: Ctrl+S 로 현재 열린 엔티티 저장 ────────
+// ── 단축키: Ctrl+S 로 편집한 모든 파일 저장 ────────
 window.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
     e.preventDefault();
-    if (inspector.entity && inspector.fileNode) inspector.save();
-    else toast('저장할 파일이 없습니다', true);
+    saveAll();
   }
 });
 

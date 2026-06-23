@@ -8,9 +8,10 @@ import { PatternEditor } from './patterns.js';
 import { BTEditor } from './bt.js';
 
 export class Inspector {
-  constructor(el, { onSave, onEntityLoad, onPatternSelect, onDirtyChange }) {
+  constructor(el, { onSave, onSaveAll, onEntityLoad, onPatternSelect, onDirtyChange }) {
     this.el = el;
     this.onSave = onSave;
+    this.onSaveAll = onSaveAll;
     this.onEntityLoad = onEntityLoad;
     this.onPatternSelect = onPatternSelect;
     this.onDirtyChange = onDirtyChange;
@@ -18,6 +19,8 @@ export class Inspector {
     this.fileNode = null;
     this.dirty = false;
     this.patternEditor = null;
+    this._foldDef = new Set(); // 접힌 투사체/지형 정의 id 집합
+    this._saveCount = 0;       // 전역 미저장 파일 수(저장 버튼 표시용)
   }
 
   load(entity, fileNode) {
@@ -30,10 +33,13 @@ export class Inspector {
   }
 
   _mark() { const was = this.dirty; this.dirty = true; this._updateSaveBtn(); if (!was) this.onDirtyChange?.(this.fileNode, true); }
+  markDirty() { this._mark(); } // 외부(메인)에서 캐시된 미저장 상태 복원용
+  setClean() { const was = this.dirty; this.dirty = false; this._updateSaveBtn(); if (was) this.onDirtyChange?.(this.fileNode, false); }
+  setSaveAllCount(n) { this._saveCount = n; this._updateSaveBtn(); } // 전역 미저장 수 반영
   _refreshBT() { this.btEditor?.render(); this.bt2Editor?.render(); } // 거리밴드/페이즈 변경 → BT 드롭다운 갱신
   _updateSaveBtn() {
     const b = this.el.querySelector('#insp-save');
-    if (b) { b.disabled = !this.dirty; b.textContent = this.dirty ? '💾 저장 *' : '💾 저장됨'; }
+    if (b) { b.disabled = !this._saveCount; b.textContent = this._saveCount ? `💾 전체 저장 (${this._saveCount})` : '💾 저장됨'; }
   }
 
   render() {
@@ -99,7 +105,7 @@ export class Inspector {
     this.el.querySelector('#add-proj').onclick = () => { e.projectiles.push(model.newProjectileDef()); this._mark(); this._renderProjDefs(); };
     this.el.querySelector('#add-terr').onclick = () => { e.terrains.push(model.newTerrainDef()); this._mark(); this._renderTerrDefs(); };
 
-    this.el.querySelector('#insp-save').onclick = () => this.save();
+    this.el.querySelector('#insp-save').onclick = () => (this.onSaveAll ? this.onSaveAll() : this.save());
 
     // ②③ 패턴/이벤트 편집기
     this.patternEditor = new PatternEditor(this.el.querySelector('#patterns-host'), {
@@ -166,7 +172,7 @@ export class Inspector {
     this.el.querySelector('#f-name').oninput = (ev) => { e.name = ev.target.value; this._mark(); };
     this.el.querySelector('#f-desc').oninput = (ev) => { e.description = ev.target.value; this._mark(); };
     this.el.querySelectorAll('input[data-k]').forEach((inp) => { inp.oninput = () => { e[inp.dataset.k] = +inp.value; this._mark(); }; });
-    this.el.querySelector('#insp-save').onclick = () => this.save();
+    this.el.querySelector('#insp-save').onclick = () => (this.onSaveAll ? this.onSaveAll() : this.save());
     this._updateSaveBtn();
   }
 
@@ -210,31 +216,59 @@ export class Inspector {
     });
   }
 
+  // 접이식 정의 카드 헬퍼: 헤더(이름·미리보기·접기·삭제) + 한 줄 1속성 본문
+  _defCard(d, { preview, onDel }) {
+    const folded = this._foldDef.has(d.id);
+    const card = document.createElement('div');
+    card.className = 'def-card' + (folded ? ' folded' : '');
+    card.innerHTML = `
+      <div class="def-hd">
+        <button class="fold-tog" title="접기/펼치기">${folded ? '▸' : '▾'}</button>
+        <input class="grow d-name" value="${attr(d.name)}" title="이름">
+        ${preview}
+        <button class="mini del">×</button>
+      </div>
+      <div class="def-body"></div>`;
+    card.querySelector('.d-name').oninput = (ev) => { d.name = ev.target.value; this._mark(); };
+    card.querySelector('.del').onclick = onDel;
+    const tog = card.querySelector('.fold-tog');
+    tog.onclick = () => {
+      const f = !this._foldDef.has(d.id);
+      if (f) this._foldDef.add(d.id); else this._foldDef.delete(d.id);
+      card.classList.toggle('folded', f); tog.textContent = f ? '▸' : '▾';
+    };
+    return card;
+  }
+  // 본문 한 줄: 라벨 좌 · 입력 우
+  _defRow(label, input) {
+    const r = document.createElement('div'); r.className = 'def-row';
+    r.innerHTML = `<span>${label}</span>`;
+    r.appendChild(input);
+    return r;
+  }
+  _numIn(value, step, oninput) {
+    const inp = document.createElement('input'); inp.type = 'number'; inp.step = step; inp.value = value;
+    inp.oninput = () => { oninput(+inp.value); this._mark(); };
+    return inp;
+  }
+
   _renderProjDefs() {
     const box = this.el.querySelector('#proj-defs'); const e = this.entity;
     box.innerHTML = '';
     if (!e.projectiles.length) box.innerHTML = '<div class="dim small">정의 없음</div>';
     e.projectiles.forEach((d, i) => {
-      const row = document.createElement('div'); row.className = 'rowline';
-      row.innerHTML = `
-        <input class="grow" value="${attr(d.name)}" title="이름">
-        <input type="number" step="5" style="width:52px" value="${d.damage}" title="피해"><span class="unit">뎀</span>
-        <input type="number" step="0.5" style="width:48px" value="${d.speed}" title="속도"><span class="unit">속</span>
-        <input type="number" step="0.1" style="width:48px" value="${d.lifetime}" title="소멸s"><span class="unit">소</span>
-        <input type="number" step="10" style="width:46px" value="${d.homing}" title="호밍%"><span class="unit">호</span>
-        <input type="number" step="0.05" style="width:48px" value="${d.size ?? 0.3}" title="크기(반경 m)"><span class="unit">크</span>
-        <input type="color" style="width:30px;padding:0" value="${d.color || '#f0883e'}" title="색">
-        <button class="mini del">×</button>`;
-      const [nm, dmg, sp, lf, hm, sz, col] = row.querySelectorAll('input');
-      nm.oninput = () => { d.name = nm.value; this._mark(); };
-      dmg.oninput = () => { d.damage = +dmg.value; this._mark(); };
-      sp.oninput = () => { d.speed = +sp.value; this._mark(); };
-      lf.oninput = () => { d.lifetime = +lf.value; this._mark(); };
-      hm.oninput = () => { d.homing = +hm.value; this._mark(); };
-      sz.oninput = () => { d.size = +sz.value; this._mark(); };
-      col.oninput = () => { d.color = col.value; this._mark(); };
-      row.querySelector('.del').onclick = () => { e.projectiles.splice(i, 1); this._mark(); this._renderProjDefs(); };
-      box.appendChild(row);
+      const card = this._defCard(d, {
+        preview: `<input type="color" class="d-color" style="width:30px;padding:0" value="${d.color || '#f0883e'}" title="색">`,
+        onDel: () => { e.projectiles.splice(i, 1); this._mark(); this._renderProjDefs(); },
+      });
+      const body = card.querySelector('.def-body');
+      body.appendChild(this._defRow('피해', this._numIn(d.damage, 5, (v) => d.damage = v)));
+      body.appendChild(this._defRow('속도 (m/s)', this._numIn(d.speed, 0.5, (v) => d.speed = v)));
+      body.appendChild(this._defRow('소멸 시간 (s)', this._numIn(d.lifetime, 0.1, (v) => d.lifetime = v)));
+      body.appendChild(this._defRow('호밍 (%)', this._numIn(d.homing, 10, (v) => d.homing = v)));
+      body.appendChild(this._defRow('크기 (반경 m)', this._numIn(d.size ?? 0.3, 0.05, (v) => d.size = v)));
+      card.querySelector('.d-color').oninput = (ev) => { d.color = ev.target.value; this._mark(); };
+      box.appendChild(card);
     });
   }
 
@@ -243,22 +277,18 @@ export class Inspector {
     box.innerHTML = '';
     if (!e.terrains.length) box.innerHTML = '<div class="dim small">정의 없음</div>';
     e.terrains.forEach((d, i) => {
-      const row = document.createElement('div'); row.className = 'rowline';
-      const opts = model.TERRAIN_TYPES.map((t) => `<option ${t === d.terrain ? 'selected' : ''}>${t}</option>`).join('');
-      row.innerHTML = `
-        <input class="grow" value="${attr(d.name)}" title="이름">
-        <select title="형태">${opts}</select>
-        <input type="number" step="0.5" style="width:56px" value="${d.size}" title="지름m"><span class="unit">⌀</span>
-        <input type="number" step="0.5" style="width:56px" value="${d.duration}" title="지속s"><span class="unit">s</span>
-        <button class="mini del">×</button>`;
-      const nm = row.querySelector('input'); const sel = row.querySelector('select');
-      const [, sz, du] = row.querySelectorAll('input');
-      nm.oninput = () => { d.name = nm.value; this._mark(); };
+      const card = this._defCard(d, {
+        preview: '',
+        onDel: () => { e.terrains.splice(i, 1); this._mark(); this._renderTerrDefs(); },
+      });
+      const body = card.querySelector('.def-body');
+      const sel = document.createElement('select');
+      sel.innerHTML = model.TERRAIN_TYPES.map((t) => `<option ${t === d.terrain ? 'selected' : ''}>${t}</option>`).join('');
       sel.onchange = () => { d.terrain = sel.value; this._mark(); };
-      sz.oninput = () => { d.size = +sz.value; this._mark(); };
-      du.oninput = () => { d.duration = +du.value; this._mark(); };
-      row.querySelector('.del').onclick = () => { e.terrains.splice(i, 1); this._mark(); this._renderTerrDefs(); };
-      box.appendChild(row);
+      body.appendChild(this._defRow('형태', sel));
+      body.appendChild(this._defRow('지름 (m)', this._numIn(d.size, 0.5, (v) => d.size = v)));
+      body.appendChild(this._defRow('지속 (s)', this._numIn(d.duration, 0.5, (v) => d.duration = v)));
+      box.appendChild(card);
     });
   }
 

@@ -25,6 +25,7 @@ export class PatternEditor {
   constructor(el, { onChange, onSelect }) {
     this.el = el; this.onChange = onChange; this.onSelect = onSelect;
     this.entity = null; this.selPat = null;
+    this._fold = new Set(); // 접힌 이벤트 id 집합(재렌더 유지)
   }
   setEntity(entity) { this.entity = entity; this._select(null); this.render(); }
   _mark() { this.onChange?.(); }
@@ -35,7 +36,6 @@ export class PatternEditor {
     if (!e) { this.el.innerHTML = ''; return; }
     this.el.innerHTML = `
       <div class="sec-hd">패턴 (${e.patterns.length})
-        <span class="grow"></span>
         <button class="mini" id="add-pat">+ 패턴</button>
       </div>
       <div id="pat-list"></div>
@@ -81,7 +81,6 @@ export class PatternEditor {
         </div>
         <div id="timeline"></div>
         <div class="sec-hd sub">이벤트 (${p.events.length})
-          <span class="grow"></span>
           <button class="mini" id="add-ev">+ 이벤트</button>
           <button class="mini" id="sort-ev">↕ 시간정렬</button>
         </div>
@@ -132,10 +131,12 @@ export class PatternEditor {
   // depth 0 = 일반(복합 가능), 1 = 복합 하위(중첩 불가)
   _eventCard(ev, arr, depth) {
     const card = document.createElement('div');
-    card.className = 'ev depth' + depth;
+    const folded = this._fold.has(ev.id);
+    card.className = 'ev depth' + depth + (folded ? ' folded' : '');
     card.style.borderLeftColor = TYPE_COLORS[ev.type] || '#888';
     card.innerHTML = `
       <div class="ev-hd">
+        <button class="fold-tog" title="접기/펼치기">${folded ? '▸' : '▾'}</button>
         <span class="ev-t">⏱<input type="number" step="0.05" value="${ev.time}" class="ev-time"></span>
         <select class="ev-type">${model.EVENT_TYPES.map((t) => `<option ${t === ev.type ? 'selected' : ''}>${t}</option>`).join('')}</select>
         ${depth === 0 ? `<label class="ef cmp"><input type="checkbox" class="ev-cmp" ${ev.composite ? 'checked' : ''}>복합</label>` : ''}
@@ -144,6 +145,13 @@ export class PatternEditor {
       </div>
       <div class="ev-body"></div>`;
     this._renderEventBody(card.querySelector('.ev-body'), ev, depth);
+
+    const tog = card.querySelector('.fold-tog');
+    tog.onclick = () => {
+      const f = !this._fold.has(ev.id);
+      if (f) this._fold.add(ev.id); else this._fold.delete(ev.id);
+      card.classList.toggle('folded', f); tog.textContent = f ? '▸' : '▾';
+    };
 
     card.querySelector('.ev-time').onchange = (e) => { ev.time = +e.target.value; this._mark(); this._renderTimeline(); this._renderEventList(); };
     card.querySelector('.ev-type').onchange = (e) => {

@@ -22,10 +22,10 @@ export class BTEditor {
     const e = this.entity; if (!e || !e[this.btKey]) { this.el.innerHTML = ''; return; }
     const rows = e[this.btKey];
     this.el.innerHTML = `
-      <div class="sec-hd">${this.title} (${rows.length}) <span class="dim small">· 위→아래 우선순위</span>
-        <span class="grow"></span>
+      <div class="sec-hd">${this.title} (${rows.length})
         <button class="mini" id="bt-merge" title="셀 병합 보기 토글(OFF=행별 편집)">${this.merge ? '⊟ 병합' : '⊞ 펼침'}</button>
         <button class="mini" id="bt-add">+ 행</button>
+        <span class="dim small" style="font-weight:400">· 위→아래 우선순위</span>
       </div>
       <div class="bt-wrap">
         <table class="bt-table">

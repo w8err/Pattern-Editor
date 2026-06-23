@@ -13,19 +13,19 @@ export class TreeView {
     this.rootNode = null;
     this.selected = null;     // 선택된 node(dir 또는 file)
     this.expanded = new Set(); // 펼쳐진 dir 핸들 name 경로
-    this.dirtyKey = null;      // 미저장 변경이 있는 파일 경로키(1개) — 빨간 느낌표
+    this.dirtyKeys = new Set(); // 미저장 변경이 있는 파일 경로키들 — 빨간 느낌표(여러 개 동시)
   }
 
-  // 인스펙터의 미저장 상태 반영(파일 1개만 열려 편집되므로 단일 키로 충분)
+  // 인스펙터의 미저장 상태 반영(선택 여부와 무관하게 파일별로 배지 유지)
   setDirty(node, dirty) {
     const key = node && node.parent ? this._key(node) : null; // 가상 노드(기본 유저)는 무시
-    const next = dirty ? key : null;
-    if (next === this.dirtyKey) return;
-    this.dirtyKey = next;
-    this.render();
+    if (!key) return;
+    const had = this.dirtyKeys.has(key);
+    if (dirty) this.dirtyKeys.add(key); else this.dirtyKeys.delete(key);
+    if (had !== dirty) this.render();
   }
 
-  setRoot(node) { this.rootNode = node; this.dirtyKey = null; this.selected = null; this.expanded.add(this._key(node)); this.render(); }
+  setRoot(node) { this.rootNode = node; this.dirtyKeys.clear(); this.selected = null; this.expanded.add(this._key(node)); this.render(); }
 
   // 선택을 특정 노드로 되돌림(미저장 보호로 이동 취소 시) — 선택 하이라이트만 복원, onSelectFile은 안 부름
   reselect(node) { this.selected = node; this.render(); }
@@ -83,7 +83,7 @@ export class TreeView {
         this.render();
       };
     } else {
-      const dirty = this.dirtyKey && this._key(node) === this.dirtyKey;
+      const dirty = this.dirtyKeys.has(this._key(node));
       row.innerHTML = `<span class="tw"></span><span class="ti">📄${dirty ? '<i class="dirty-badge">!</i>' : ''}</span><span class="tn">${esc(node.name.replace(/\.json$/, ''))}</span>`;
       row.onclick = (e) => {
         e.stopPropagation();

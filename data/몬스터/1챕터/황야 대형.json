@@ -6,7 +6,7 @@
   "hp": 1000,
   "size": 0.7,
   "rotationSpeed": 360,
-  "description": "",
+  "description": "무리의 추적자이자 몰이꾼이다. 긴 창으로 근~중거리를 장악하며 압박한다. 체력이 높고 지구력이 강해 쉽게 물러서지 않는다. \n강력한 턱으로 물어뜯는 근접 공격도 사용한다. ",
   "distanceBands": [
     {
       "name": "근거리",
@@ -33,7 +33,36 @@
   ],
   "projectiles": [],
   "terrains": [],
-  "patterns": [],
+  "patterns": [
+    {
+      "id": "5f1a8023-4c74-4c1e-90a3-47f2948aef19",
+      "name": "걷기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    },
+    {
+      "id": "9615d4ad-13cc-4f6d-9d9c-cafeb1b1ae85",
+      "name": "창 찌르기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    },
+    {
+      "id": "b6895cba-4486-4d91-9c04-97b6653b92a3",
+      "name": "창 휩쓸기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    },
+    {
+      "id": "ca3bf45b-ea63-41a3-b925-1cbe5ce26224",
+      "name": "물어뜯기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    }
+  ],
   "bt": [],
   "color": "#9c5454"
 }

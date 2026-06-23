@@ -6,7 +6,7 @@
   "hp": 1000,
   "size": 0.6,
   "rotationSpeed": 360,
-  "description": "",
+  "description": "일반 중형보다 강력한 투척무기를 사용한다.\n원거리에서 강화된 투척으로 압박하되, 플레이어가 가까이 붙으면 투척무기를 근접 무기로 전환해 휘두른다. 거리와 무관하게 위협적이다. ",
   "distanceBands": [
     {
       "name": "근거리",
@@ -40,7 +40,17 @@
       "lifetime": 1.5,
       "homing": 0,
       "size": 0.3,
-      "color": "#f0883e"
+      "color": "#ff700a"
+    },
+    {
+      "id": "4564680a-5c35-4c8c-8a73-45c92f2a0d9c",
+      "name": "작은단검",
+      "damage": 50,
+      "speed": 18,
+      "lifetime": 0.2,
+      "homing": 0.7,
+      "size": 0.3,
+      "color": "#adadad"
     }
   ],
   "terrains": [],
@@ -350,6 +360,49 @@
           "sub": []
         }
       ]
+    },
+    {
+      "id": "2da2c25a-4c45-4506-a8c0-03ab5827db9f",
+      "name": "부메랑 2연 내려찍기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    },
+    {
+      "id": "2ad890dd-de39-467f-ab72-981b8eefa460",
+      "name": "백대쉬 후 작은단검 던지기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    },
+    {
+      "id": "7b25235c-1b6b-455b-aa09-ccf306805909",
+      "name": "작은단검 던지기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": [
+        {
+          "id": "dc9f5194-2285-4c62-bdbf-be087b99b531",
+          "time": 0.18,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "4564680a-5c35-4c8c-8a73-45c92f2a0d9c",
+          "count": 3,
+          "interval": 0,
+          "dir": "직선",
+          "projPath": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        }
+      ]
+    },
+    {
+      "id": "9ebe09b9-d5ed-4388-8f97-50856c82e3ca",
+      "name": "부메랑 던지기 + 작은단검 던지기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
     }
   ],
   "bt": [],

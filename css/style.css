@@ -111,6 +111,18 @@ textarea{width:100%;resize:vertical}
 .pidx{color:var(--accent);font-weight:600;width:24px}
 .dim{color:var(--dim)} .small{font-size:11px}
 
+/* 투사체/지형 정의 카드(접이식 · 한 줄 1속성) */
+.def-card{margin:5px 0;background:var(--bg2);border:1px solid var(--line);border-radius:7px;padding:6px 8px}
+.def-hd{display:flex;align-items:center;gap:6px}
+.def-hd .d-name{flex:1;font-weight:600;min-width:60px}
+.def-body{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:0}
+.def-card.folded .def-body{display:none}
+.def-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:3px 5px;border-radius:4px;font-size:12px;color:var(--dim)}
+.def-row:nth-of-type(odd){background:#ffffff05}
+.def-row:hover{background:#ffffff0d}
+.def-row input,.def-row select{flex:0 0 46%;width:46%;text-align:right;padding:3px 7px}
+.def-row select{text-align:left}
+
 /* ②패턴 리스트 */
 .sec-hd .grow,.pat-meta+.grow{flex:1}
 .pat-row{display:flex;align-items:center;gap:8px;padding:5px 8px;margin:3px 0;background:var(--bg2);border:1px solid var(--line);border-radius:6px;cursor:pointer}
@@ -143,8 +155,18 @@ textarea{width:100%;resize:vertical}
 .ev-t{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--dim)}
 .ev-time{width:60px}
 .ev-type{font-weight:600}
-.ev-body{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+/* 한 줄에 1속성: 라벨 좌 · 입력 우 */
+.ev-body{display:flex;flex-direction:column;gap:0;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
 .ev-body:empty{display:none}
+.ev.folded .ev-body{display:none}
+.ev-body>.ef{flex-direction:row;justify-content:space-between;align-items:center;width:100%;gap:10px;padding:3px 5px;border-radius:4px}
+.ev-body>.ef:nth-of-type(odd){background:#ffffff05}
+.ev-body>.ef:hover{background:#ffffff0d}
+.ev-body>.dim.small{padding:3px 5px;line-height:1.4}
+.ev-body>.mini{align-self:flex-start;margin:3px 0}
+/* 접기 토글(이벤트·정의 공통) */
+.fold-tog{background:none;border:none;color:var(--dim);cursor:pointer;font-size:10px;width:16px;flex-shrink:0;padding:0;line-height:1}
+.fold-tog:hover{color:var(--fg)}
 .sub-events{flex-basis:100%;margin-top:4px}
 .sub-hd{font-size:11px;color:var(--dim);margin-bottom:4px;display:flex;gap:6px;align-items:center}
 

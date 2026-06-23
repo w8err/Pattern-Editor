@@ -6,7 +6,7 @@
   "hp": 1000,
   "size": 0.5,
   "rotationSpeed": 360,
-  "description": "",
+  "description": "수많은 약탈과 전투에서 살아남은 성인 개체다. \n두 자루의 칼로 싸우며, 일반 소형보다 크고 훨씬 공격적이고 교활하다. 단순히 달려드는 일반 소형과 달리, 빈틈을 계산하며 싸운다.",
   "distanceBands": [
     {
       "name": "근거리",
@@ -33,7 +33,189 @@
   ],
   "projectiles": [],
   "terrains": [],
-  "patterns": [],
+  "patterns": [
+    {
+      "id": "26c2036f-76d8-4953-8765-b64a8385b8de",
+      "name": "연속 베기",
+      "duration": 3.5,
+      "cooldown": 1,
+      "events": [
+        {
+          "id": "8eb97f1e-c06a-46e4-898f-10bad1e74076",
+          "time": 1.2,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "e7417945-0c4c-4a3e-9eb0-9d0c66fe3a0b",
+          "time": 1.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "aa7b8a60-3d39-42ce-bfae-7b507a50f319",
+          "time": 1.29,
+          "type": "대쉬",
+          "composite": true,
+          "sub": [
+            {
+              "id": "dfd6bfa4-82c2-4eed-b535-db313f38ecd0",
+              "time": 1,
+              "type": "공격",
+              "composite": false,
+              "sub": [],
+              "indicator": true,
+              "indicatorTime": 0.5,
+              "damage": 0,
+              "shape": "원형",
+              "area": "지름",
+              "offset": 0.5,
+              "sizeA": 1,
+              "sizeB": 0,
+              "zone": "유저추적",
+              "trackPct": 100
+            }
+          ],
+          "dir": "직선",
+          "dist": 1.5,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "sizeA": 1
+        },
+        {
+          "id": "7b2f5357-96de-4b34-aeb0-9c915a46081c",
+          "time": 2.9,
+          "type": "공격",
+          "composite": false,
+          "sub": [
+            {
+              "id": "69adf28f-c7dd-4a80-a6a7-45e5438e6b5d",
+              "time": 0.5,
+              "type": "대기",
+              "composite": false,
+              "sub": []
+            }
+          ],
+          "indicator": false,
+          "indicatorTime": 0.5,
+          "damage": 0,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "offset": 0.5,
+          "sizeA": 1,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        },
+        {
+          "id": "235ee104-5445-417d-ba96-447711a96acd",
+          "time": 1.63,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.5,
+          "damage": 0,
+          "shape": "원형",
+          "area": "지름",
+          "offset": 0.5,
+          "sizeA": 1.8,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        },
+        {
+          "id": "65cad4c5-aa6c-40a1-a195-580f289215c3",
+          "time": 1.95,
+          "type": "대쉬",
+          "composite": true,
+          "sub": [
+            {
+              "id": "87fab43c-2f69-40af-b794-c297055c72c0",
+              "time": 2,
+              "type": "공격",
+              "composite": false,
+              "sub": [],
+              "indicator": true,
+              "indicatorTime": 0.5,
+              "damage": 0,
+              "shape": "원형",
+              "area": "나로부터거리",
+              "offset": 0.5,
+              "sizeA": 1,
+              "sizeB": 0,
+              "zone": "유저추적",
+              "trackPct": 100
+            }
+          ],
+          "dir": "직선",
+          "dist": 1.5,
+          "curve": 0.6,
+          "track": true,
+          "customPath": null,
+          "indicator": true,
+          "sizeA": 1,
+          "area": "나로부터거리",
+          "offset": 0.5
+        },
+        {
+          "id": "8f51af96-1d64-4b04-a104-5e3cefae8b6d",
+          "time": 2.6,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": false,
+          "indicatorTime": 0.5,
+          "damage": 0,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "offset": 0.5,
+          "sizeA": 1,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        }
+      ]
+    },
+    {
+      "id": "a8217426-9db8-4c32-9a39-dcf7bf053e7e",
+      "name": "달리기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    },
+    {
+      "id": "29894b65-9c78-4ac0-abf2-88fb84c0eb77",
+      "name": "좌우걷기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    },
+    {
+      "id": "87f2785a-b9d2-4865-ae55-1d5a0a4f0952",
+      "name": "단검 베기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    },
+    {
+      "id": "858cb76f-9f35-4190-984d-e80e8bcbaec0",
+      "name": "백대쉬 후 작은단검 던지기",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    },
+    {
+      "id": "15c88d65-86cb-4b97-b227-f55c20dc9cac",
+      "name": "포효",
+      "duration": 1,
+      "cooldown": 1,
+      "events": []
+    }
+  ],
   "bt": [],
   "color": "#6a7386"
 }
