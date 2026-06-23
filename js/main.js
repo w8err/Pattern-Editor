@@ -40,7 +40,7 @@ const inspector = new Inspector($('#inspector'), {
       if (fileNode?.web) {
         store.saveWebEdit(fileNode.path, model.serialize(entity));
         await refreshUsers();
-        updateWebResetBtn();
+        refreshModeUI('web');
         toast('이 브라우저에 임시 저장됨 (공유 안 됨)');
         return;
       }
@@ -70,6 +70,18 @@ function defaultUserEntity() {
 playback.setDefaultUser(defaultUserEntity());
 playback.onEditDefaultUser = () => {
   inspector.load(defaultUserEntity(), { virtual: 'default-user', name: '기본 유저' });
+};
+
+// ── 모드 세그먼트(배포/로컬) ──────────────────────
+$('#mode-web').onclick = () => setMode('web');
+$('#mode-local').onclick = () => setMode('local');
+$('#btn-web-reset').onclick = async () => {
+  if (!confirm('이 브라우저의 임시 편집을 모두 초기화할까요? (배포 데이터로 되돌아갑니다)')) return;
+  store.clearWebEdits();
+  inspector.entity = null; inspector.fileNode = null;
+  inspector.el.innerHTML = '<div class="insp-empty">엔티티를 선택하세요</div>';
+  await setMode('web');
+  toast('로컬 편집 초기화됨');
 };
 
 // ── 툴바 ─────────────────────────────────────────
@@ -105,17 +117,45 @@ async function openFolder() {
   }
 }
 
-let webMode = false; // 웹(fetch 읽기 전용) 모드 — 폴더 미연결, 편집은 localStorage에만
+// ── 데이터 소스 모드 ──────────────────────────────
+//  'web'   = 배포 data/ (fetch 읽기 전용, 편집은 localStorage 오버레이)
+//  'local' = 로컬 폴더 (FSA, 실제 .json 읽기/쓰기) — 소유자/편집자
+let webMode = false;       // web 모드 여부(읽기 경로 분기에 사용)
+let localHandle = null;    // 현재/마지막으로 연 로컬 폴더 핸들
+
+// 모드 전환의 단일 진입점. 세그먼트 버튼·부팅·초기화에서 모두 이걸 호출.
+async function setMode(mode) {
+  if (mode === 'web') {
+    const ok = await tryLoadWeb();
+    if (!ok) { toast('배포 데이터를 불러올 수 없습니다 (data/manifest.json 없음)', true); refreshModeUI('local'); return; }
+  } else {
+    webMode = false;
+    if (localHandle) await mountRoot(localHandle); // 이미 연 폴더가 있으면 그대로 다시 로드
+    else showLocalEmpty();                          // 없으면 폴더 열기 유도
+  }
+  refreshModeUI(mode);
+}
 
 async function mountRoot(handle) {
   if (!(await store.verifyPermission(handle, true))) { toast('폴더 권한이 필요합니다', true); return; }
   const node = await store.buildTree(handle, null);
-  webMode = false; updateWebResetBtn();
+  webMode = false; localHandle = handle;
   tree.setRoot(node);
   $('#root-name').textContent = handle.name;
   $('#hint').textContent = '';
   setReady(true);
   await refreshUsers();
+  refreshModeUI('local');
+}
+
+// 로컬 모드인데 아직 폴더를 안 연 상태 — 빈 트리 + 안내
+function showLocalEmpty() {
+  tree.setRoot(null);
+  tree.el.innerHTML = '<div class="tree-empty">📂 폴더를 열어 로컬 데이터를 편집하세요</div>';
+  $('#root-name').textContent = '';
+  $('#hint').textContent = '';
+  setReady(false);
+  playback.setUsers([]);
 }
 
 // 배포 사이트의 data/ 자동 로드(폴더 열기 없이 보기/플레이테스트). 성공 시 true.
@@ -128,29 +168,24 @@ async function tryLoadWeb() {
   $('#hint').textContent = '읽기 전용 · 편집은 이 브라우저에만 저장(공유 안 됨)';
   setReady(false); // 생성/삭제(파일 쓰기) 불가 — 편집·저장(localStorage)은 가능
   await refreshUsers();
-  updateWebResetBtn();
   return true;
 }
 
-// 웹 편집 초기화 버튼(있을 때만 노출)
-function updateWebResetBtn() {
-  let btn = $('#btn-web-reset');
-  if (!btn) {
-    btn = document.createElement('button');
-    btn.id = 'btn-web-reset'; btn.className = 'btn';
-    btn.textContent = '↺ 로컬 편집 초기화';
-    btn.title = '이 브라우저에 임시 저장한 편집을 모두 지우고 배포 데이터로 되돌림';
-    btn.onclick = async () => {
-      if (!confirm('이 브라우저의 임시 편집을 모두 초기화할까요? (배포 데이터로 되돌아갑니다)')) return;
-      store.clearWebEdits();
-      inspector.entity = null; inspector.fileNode = null;
-      inspector.el.innerHTML = '<div class="insp-empty">엔티티를 선택하세요</div>';
-      await tryLoadWeb();
-      toast('로컬 편집 초기화됨');
-    };
-    $('#root-name').after(btn);
-  }
-  btn.style.display = (webMode && store.hasWebEdits()) ? '' : 'none';
+// 모드 세그먼트 하이라이트 + 액션 버튼(폴더 열기/다시 열기/편집 초기화) 노출 정리
+function refreshModeUI(mode) {
+  $('#mode-web').classList.toggle('on', mode === 'web');
+  $('#mode-local').classList.toggle('on', mode === 'local');
+  const mounted = mode === 'local' && !!localHandle;
+  // 폴더 열기: 로컬 모드에서만. 미연결이면 primary로 강조.
+  const open = $('#btn-open');
+  open.style.display = mode === 'local' ? '' : 'none';
+  open.classList.toggle('primary', !mounted);
+  open.textContent = mounted ? '📂 다른 폴더' : '📂 폴더 열기';
+  // 다시 열기: 로컬 모드 + 저장된 폴더 있고 + 아직 미연결일 때만(아래 tryRestore에서 표시 토글)
+  if (mode !== 'local' || mounted) $('#btn-reconnect').style.display = 'none';
+  else if (savedRoot) $('#btn-reconnect').style.display = '';
+  // 로컬 편집 초기화: web 모드 + 오버레이 있을 때만
+  $('#btn-web-reset').style.display = (mode === 'web' && store.hasWebEdits()) ? '' : 'none';
 }
 
 // 파일 노드 읽기 — 웹(fetch/오버레이) vs FSA(handle) 통합
@@ -178,15 +213,15 @@ async function refreshUsers() {
 }
 
 // ── 세션 복원: 이전에 연 폴더 재연결(소유자/편집자) ──
+let savedRoot = null; // 이전에 연 폴더 핸들(있으면 '다시 열기' 버튼 노출)
 async function tryRestore() {
   if (!store.isSupported()) return;
-  const saved = await store.getSavedRoot();
-  if (saved) {
+  savedRoot = await store.getSavedRoot();
+  if (savedRoot) {
     const btn = $('#btn-reconnect');
-    btn.style.display = '';
-    btn.textContent = `↻ 다시 열기: ${saved.name}`;
+    btn.textContent = `↻ 다시 열기: ${savedRoot.name}`;
     btn.onclick = async () => {
-      try { await mountRoot(saved); } catch (err) { toast('재연결 실패: ' + err.message, true); }
+      try { await mountRoot(savedRoot); } catch (err) { toast('재연결 실패: ' + err.message, true); }
     };
   }
 }
@@ -229,12 +264,19 @@ function makeResizer(handle, panel, grow) { // grow: 'left'=+dx, 'right'=-dx
 makeResizer($('#rsz-side'), $('#sidebar'), 'left');
 makeResizer($('#rsz-stage'), $('#stage'), 'right');
 
-// ── 부팅: 배포 데이터 자동 로드 → (소유자) 폴더 재연결 버튼 ──
+// ── 부팅: 이전 폴더 재연결 버튼 준비 → 배포 데이터로 시작 ──
 setReady(false);
 boot();
 async function boot() {
-  const web = await tryLoadWeb();                 // 웹 팀원: data/ 자동 로드(보기·플레이테스트·로컬 편집)
-  await tryRestore();                             // 소유자: 이전 폴더 재연결 버튼 노출
-  if (!web && !store.isSupported())
-    $('#hint').textContent = '⚠ 데이터를 불러올 수 없습니다 (배포 사이트 또는 로컬 서버에서 실행하세요)';
+  await tryRestore();                  // 소유자: 이전 폴더 기록 확인(다시 열기 버튼 준비)
+  const web = await tryLoadWeb();      // 기본 진입: 배포 data/ 자동 로드(보기·플레이테스트·로컬 편집)
+  if (web) {
+    refreshModeUI('web');
+  } else if (savedRoot) {
+    await setMode('local');            // 배포 데이터 없으나 이전 로컬 폴더 있음 → 로컬 모드로
+  } else {
+    refreshModeUI('local'); showLocalEmpty();
+    if (!store.isSupported())
+      $('#hint').textContent = '⚠ 데이터를 불러올 수 없습니다 (배포 사이트 또는 로컬 서버에서 실행하세요)';
+  }
 }

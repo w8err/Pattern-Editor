@@ -9,8 +9,15 @@
 <body>
 <header id="topbar">
   <h1>🐾 BB 몬스터 패턴 에디터</h1>
-  <button id="btn-open" class="btn primary">📂 폴더 열기</button>
-  <button id="btn-reconnect" class="btn" style="display:none"></button>
+  <div class="mode-switch" role="tablist">
+    <button id="mode-web" class="mode-seg" title="배포된 data/ 자동 로드 (읽기 전용 · 편집은 이 브라우저에만)">📦 배포 데이터</button>
+    <button id="mode-local" class="mode-seg" title="로컬 폴더를 열어 실제 .json 편집 (소유자/편집자)">💾 로컬 데이터</button>
+  </div>
+  <span id="mode-actions" class="mode-actions">
+    <button id="btn-open" class="btn primary" style="display:none">📂 폴더 열기</button>
+    <button id="btn-reconnect" class="btn" style="display:none"></button>
+    <button id="btn-web-reset" class="btn" style="display:none" title="이 브라우저에 임시 저장한 편집을 모두 지우고 배포 데이터로 되돌림">↺ 로컬 편집 초기화</button>
+  </span>
   <span id="root-name" class="root-name"></span>
   <span id="hint" class="hint"></span>
 </header>
