@@ -730,12 +730,12 @@ export class Playback {
     if ((this.userAI || this.userManual) && this._ai?.invulnT > 0) { x.strokeStyle = '#fff'; x.lineWidth = 2; x.beginPath(); x.arc(sx, sy, 10, 0, sim.TAU); x.stroke(); }
     // 수동 조작: 마우스 조준 방향 표시
     if (this.userManual && this.user.facing != null) {
-      x.strokeStyle = '#22d3ee'; x.lineWidth = 2;
+      x.strokeStyle = '#ffd33d'; x.lineWidth = 2;
       x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + Math.cos(this.user.facing) * 15, sy + Math.sin(this.user.facing) * 15); x.stroke();
     }
-    x.fillStyle = '#22d3ee'; x.beginPath(); x.arc(sx, sy, 7, 0, sim.TAU); x.fill();
+    x.fillStyle = '#ffd33d'; x.beginPath(); x.arc(sx, sy, 7, 0, sim.TAU); x.fill();
     x.strokeStyle = '#0b0f14'; x.lineWidth = 2; x.stroke();
-    x.fillStyle = '#22d3ee'; x.font = '9px sans-serif';
+    x.fillStyle = '#ffd33d'; x.font = '9px sans-serif';
     x.fillText(this.userManual ? '유저(조작)' : this.userAI ? '유저(AI)' : '유저', sx + 9, sy + 3);
     // 스태미나 바(AI·수동 공통)
     if ((this.userAI || this.userManual) && this._ai) {

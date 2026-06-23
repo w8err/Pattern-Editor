@@ -17,7 +17,7 @@ body{background:var(--bg);color:var(--fg);font:13px/1.45 "Segoe UI",system-ui,sa
 .mode-seg{background:var(--bg3);color:var(--dim);border:0;border-right:1px solid var(--line);padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600}
 .mode-seg:last-child{border-right:0}
 .mode-seg:hover:not(.on){color:var(--fg)}
-.mode-seg.on{background:#1f6feb;color:#fff}
+.mode-seg.on{background:#8957e5;color:#fff}
 .mode-actions{display:inline-flex;gap:8px;align-items:center}
 
 /* 버튼 */
