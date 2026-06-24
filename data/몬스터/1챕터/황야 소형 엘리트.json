@@ -220,7 +220,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "025cc1c1-3ad2-4f19-aa74-6f094db0c241",
+              "defId": "a9e8f0f0-4e7c-4651-a4fa-7b7d46d7c873",
               "count": 3,
               "interval": 0,
               "dir": "직선",
@@ -237,7 +237,7 @@
           "customPath": null,
           "ease": "감속",
           "count": 3,
-          "defId": "5ad8a56c-c6dd-4856-8fd9-522c5f939535"
+          "defId": "a9e8f0f0-4e7c-4651-a4fa-7b7d46d7c873"
         }
       ]
     },
