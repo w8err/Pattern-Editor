@@ -23,6 +23,16 @@ export function seeded(str, i = 0) {
 
 const INSTANT = new Set(['공격', '투사체', '지형']);
 
+// 이징 곡선(대쉬 전용). pos=진행도 보간(경로형), vel=도함수(증분 이동의 속도계수).
+// vel의 [0,1] 평균=1 이라 총 이동거리는 등속과 동일하게 보존됨(가다 서다만 달라짐).
+export const EASE = {
+  등속:        { pos: (p) => p,                                     vel: () => 1 },
+  가속:        { pos: (p) => p * p,                                 vel: (p) => 2 * p },
+  감속:        { pos: (p) => 1 - (1 - p) * (1 - p),                 vel: (p) => 2 * (1 - p) },
+  '가속→감속': { pos: (p) => (p < .5 ? 2 * p * p : 1 - ((-2 * p + 2) ** 2) / 2), vel: (p) => (p < .5 ? 4 * p : 4 * (1 - p)) },
+};
+const ezOf = (ev) => EASE[ev?.ease] || EASE.등속;
+
 // fire 이벤트 목록(복합 하위 포함) 평탄화 → [{ev, time, burstK?}]
 // 투사체 interval>0 & count>1 이면 count발을 간격마다 연사(마지막 발이 ev.time).
 function fireEvents(pattern) {
@@ -56,6 +66,24 @@ function healEvents(pattern) {
   return out.sort((a, b) => a.time - b.time);
 }
 
+// 특수효과 이벤트(복합 하위 포함) — 순수 비주얼 마커
+function fxEvents(pattern) {
+  const out = [];
+  for (const e of pattern.events) {
+    if (e.type === '특수효과') out.push(e);
+    if (e.composite && e.sub) for (const s of e.sub) if (s.type === '특수효과') out.push(s);
+  }
+  return out.sort((a, b) => a.time - b.time);
+}
+// 조건점검 이벤트(복합 하위 포함)
+function condEvents(pattern) {
+  const out = [];
+  for (const e of pattern.events) {
+    if (e.type === '조건점검') out.push(e);
+    if (e.composite && e.sub) for (const s of e.sub) if (s.type === '조건점검') out.push(s);
+  }
+  return out.sort((a, b) => a.time - b.time);
+}
 // 순간이동 이벤트(복합 하위 포함)
 function teleportEvents(pattern) {
   const out = [];
@@ -113,6 +141,13 @@ export function attackGeom(ev, st, user) {
     const r = ev.sizeA || 2;
     return { kind: 'circle', x: zx, y: zy, r, hit: dist(zx, zy, user.x, user.y) <= r };
   }
+  if (ev.shape === '부채꼴') {
+    // 부채꼴: 꼭짓점=중심(cx,cy), facing 방향, 반지름=지름/2, 폭=coneAngle°(±절반)
+    const r = (ev.sizeA || 3) / 2, half = ((ev.coneAngle ?? 90) * Math.PI / 180) / 2;
+    const dx = user.x - cx, dy = user.y - cy, dd = Math.hypot(dx, dy);
+    const da = Math.abs(norm(Math.atan2(dy, dx) - face));
+    return { kind: 'cone', x: cx, y: cy, face, r, half, hit: dd <= r && da <= half };
+  }
   if (ev.shape === '사각형' || ev.area === '길이와폭') {
     const len = ev.sizeA || 3, wid = ev.sizeB || 1.5;
     // 사각형: 중심(cx,cy)에서 전방으로 len, 좌우 wid/2
@@ -145,11 +180,12 @@ function applyMove(st, ev, step, user, rotSpeedRad, dashCache, ctx) {
       break;
     }
     case '대쉬': {
+      const ez = ezOf(ev); // 이징(기본 등속)
       // 커스텀 경로: 시작점 기준 상대 경로를 진행도로 따라감
       if (ev.dir === '커스텀' && ev.customPath?.length) {
         const c = dashCache[ev.id] ??= { start: { x: st.mx, y: st.my } };
         const span = Math.max(0.05, ctx.segEnd - ctx.segStart);
-        const prog = Math.min(1, Math.max(0, (ctx.t - ctx.segStart) / span));
+        const prog = ez.pos(Math.min(1, Math.max(0, (ctx.t - ctx.segStart) / span)));
         const pt = pathAt(ev.customPath, prog);
         st.mx = c.start.x + pt.x; st.my = c.start.y + pt.y;
         break;
@@ -158,14 +194,17 @@ function applyMove(st, ev, step, user, rotSpeedRad, dashCache, ctx) {
       if (ev.dir === '뒤곡선') {
         const c = dashCache[ev.id] ??= computeCurve(ev, angToUser, st, ctx.lim);
         const span = Math.max(0.05, ctx.segEnd - ctx.segStart);
-        const prog = Math.min(1, Math.max(0, (ctx.t - ctx.segStart) / span));
+        const prog = ez.pos(Math.min(1, Math.max(0, (ctx.t - ctx.segStart) / span)));
         const pt = bezier2(c.P0, c.P1, c.P2, prog);
         st.mx = c.start.x + pt.x; st.my = c.start.y + pt.y;
         break;
       }
       const c = dashCache[ev.id] || (dashCache[ev.id] = computeDashDir(ev, angToUser, ctx, st));
       const v = (ev.dist || 4) / c.span;
-      st.mx += Math.cos(c.dir) * v * step; st.my += Math.sin(c.dir) * v * step;
+      // 증분 이동: 속도계수 vel(prog)로 가/감속(총 이동거리는 등속과 동일)
+      const prog = Math.min(1, Math.max(0, (ctx.t - ctx.segStart) / c.span));
+      const m = ez.vel(prog);
+      st.mx += Math.cos(c.dir) * v * m * step; st.my += Math.sin(c.dir) * v * m * step;
       // 대쉬 중엔 보는 방향 고정(진입 시점 방향 유지) — 유저 추적 안 함
       break;
     }
@@ -250,6 +289,8 @@ function getDerived(pattern) {
     notes: noteEvents(pattern),
     cones: coneEvents(pattern),
     heals: healEvents(pattern),
+    fxs: fxEvents(pattern),
+    conds: condEvents(pattern),
   };
   _derivedCache.set(pattern, { sig, d });
   return d;
@@ -260,13 +301,13 @@ export function simulateUpTo(pattern, tEnd, opts = {}) {
   const userAt = opts.user || (() => ({ x: 5, y: 0 }));
   const rotSpeedRad = ((opts.rotationSpeed ?? 360) * Math.PI / 180);
   const st = { mx: opts.init?.mx ?? 0, my: opts.init?.my ?? 0, facing: opts.init?.facing ?? 0 };
-  const { evs, fires, teles, notes, cones, heals } = getDerived(pattern);
+  const { evs, fires, teles, notes, cones, heals, fxs, conds } = getDerived(pattern);
   const dashCache = {};
   const dt = 1 / 60;
   // 맵 경계(벽): 중심 0, 한 변 mapSize. 보스 중심은 ±(half - 반경) 안으로 클램프.
   const half = (opts.mapSize ?? 99999) / 2, lim = Math.max(0.1, half - (opts.size ?? 0));
   const clampPos = () => { st.mx = Math.max(-lim, Math.min(lim, st.mx)); st.my = Math.max(-lim, Math.min(lim, st.my)); };
-  let t = 0, fi = 0, ti = 0, ni = 0, ci = 0, hi = 0, si = 0;
+  let t = 0, fi = 0, ti = 0, ni = 0, ci = 0, hi = 0, xi = 0, gi = 0, si = 0;
   let activeCone = null; // 현재 활성 부채꼴 {axis, widthRad}
   const out = [];
   let guard = 0;
@@ -297,6 +338,18 @@ export function simulateUpTo(pattern, tEnd, opts = {}) {
       const he = heals[hi];
       out.push({ type: '회복', time: he.time, amount: he.amount || 0, x: st.mx, y: st.my, ev: he });
       hi++;
+    }
+    while (xi < fxs.length && fxs[xi].time <= t2 + 1e-9) {
+      const xe = fxs[xi];
+      out.push({ type: '특수효과', time: xe.time, x: st.mx, y: st.my, color: xe.fxColor || '#7ee787', text: xe.fxText || '', ev: xe });
+      xi++;
+    }
+    while (gi < conds.length && conds[gi].time <= t2 + 1e-9) {
+      const ge = conds[gi], gd = ge.dist || 4;
+      // '앞 거리 벽': facing 방향 gd m 안에 벽이 있으면 wall=true (clearance가 gd 미만이면 막힘)
+      const wall = clearance(st.mx, st.my, st.facing, lim, gd) < gd - 1e-6;
+      out.push({ type: '조건점검', time: ge.time, x: st.mx, y: st.my, facing: st.facing, wall, dist: gd, mode: ge.condMode || '없음', abort: ge.condAbort !== false, ev: ge });
+      gi++;
     }
     // 공격각도: 이 시점의 facing을 축으로 부채꼴 확정(이후 투사체 참조 + 표시)
     while (ci < cones.length && cones[ci].time <= t2 + 1e-9) {
@@ -411,6 +464,9 @@ export function pickPattern(entity, ctx) {
     && inBand(r)
     && (!ctx.cd[r.patternId] || ctx.cd[r.patternId] <= 0)
     && feasible(r);
+  // RandomSelect: 모드 전환마다 뽑힌 난수(ctx.rsValue)가 행의 [rsMin,rsMax] 안이면 그 행을 최우선.
+  const inRandom = (r) => r.randomSelect && ctx.rsValue != null
+    && ctx.rsValue >= (r.rsMin ?? 0) && ctx.rsValue <= (r.rsMax ?? 1);
   if (ctx.usesNotes) {
     // 음표 시스템: 음표가 NOTE_MAX 이상이면 특수 패턴 강제 발동(쿨/거리 무시, 페이즈만 일치)
     if ((ctx.notes ?? 0) >= NOTE_MAX) for (const r of rows)
@@ -418,7 +474,10 @@ export function pickPattern(entity, ctx) {
   } else {
     for (const r of rows) if (r.mode === '특수' && okRow(r)) return r;           // 레거시: 특수 우선
   }
-  for (const r of rows) if (r.mode === ctx.mode && okRow(r)) return r;           // 현재 모드(불가 패턴은 스킵→다음)
+  // ① 랜덤 선택(체크 + rsValue 범위 안) → 최우선(위→아래)
+  for (const r of rows) if (r.mode === ctx.mode && inRandom(r) && okRow(r)) return r;
+  // ② 일반: 랜덤 미체크 행만 위→아래 우선순위(체크 행은 ①에서만 후보)
+  for (const r of rows) if (r.mode === ctx.mode && !r.randomSelect && okRow(r)) return r;
   return null;
 }
 // 패턴 내 모드전환 이벤트(복합 하위 포함) 추출 — [{time,toMode}]

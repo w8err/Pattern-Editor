@@ -6,9 +6,10 @@ import * as store from '../storage.js';
 import * as model from '../model.js';
 
 export class TreeView {
-  constructor(rootEl, { onSelectFile, onChange }) {
+  constructor(rootEl, { onSelectFile, onChange, onSelect }) {
     this.el = rootEl;
     this.onSelectFile = onSelectFile;
+    this.onSelect = onSelect; // 파일/폴더 아무거나 선택될 때(복사/붙여넣기 버튼 상태 갱신용)
     this.onChange = onChange; // 파일 생성/삭제 후 → main이 manifest 자동 갱신
     this.rootNode = null;
     this.selected = null;     // 선택된 node(dir 또는 file)
@@ -81,6 +82,7 @@ export class TreeView {
         this.selected = node;
         if (open) this.expanded.delete(this._key(node)); else this.expanded.add(this._key(node));
         this.render();
+        this.onSelect?.(node);
       };
     } else {
       const dirty = this.dirtyKeys.has(this._key(node));
@@ -90,6 +92,7 @@ export class TreeView {
         this.selected = node;
         this.render();
         this.onSelectFile?.(node);
+        this.onSelect?.(node);
       };
     }
 
@@ -130,6 +133,20 @@ export class TreeView {
     if (node.kind === 'file' && node.name === fname) return node;
     for (const c of node.children ?? []) { const r = this._findFileByName(c, fname); if (r) return r; }
     return null;
+  }
+  // 외부에서 만든 엔티티(복사본 등)를 현재 위치에 새 파일로 생성 + 선택. 이름 충돌은 ' 복사' 접미사로 회피.
+  async addEntity(ent) {
+    const dir = this.targetDir(); if (!dir) return;
+    const sib = this.targetDirNode()?.children || [];
+    const existing = new Set(sib.filter((c) => c.kind === 'file').map((c) => c.name.replace(/\.json$/, '')));
+    let nm = ent.name; while (existing.has(nm)) nm += ' 복사';
+    ent.name = nm;
+    this.expanded.add(this._key(this.targetDirNode()));
+    const fh = await store.createEntityFile(dir, ent, model.serialize(ent));
+    await this.refresh();
+    await this.onChange?.();
+    const node = this._findFileByName(this.rootNode, fh.name);
+    if (node) { this.selected = node; this.render(); this.onSelectFile?.(node); this.onSelect?.(node); }
   }
 
   async deleteSelected() {

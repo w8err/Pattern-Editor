@@ -37,7 +37,7 @@
     {
       "id": "26c2036f-76d8-4953-8765-b64a8385b8de",
       "name": "연속 베기",
-      "duration": 3.5,
+      "duration": 2.6,
       "cooldown": 1,
       "events": [
         {
@@ -70,7 +70,7 @@
               "indicatorTime": 0.5,
               "damage": 0,
               "shape": "원형",
-              "area": "지름",
+              "area": "나로부터거리",
               "offset": 0.5,
               "sizeA": 1,
               "sizeB": 0,
@@ -83,32 +83,9 @@
           "curve": 0.6,
           "track": false,
           "customPath": null,
-          "sizeA": 1
-        },
-        {
-          "id": "7b2f5357-96de-4b34-aeb0-9c915a46081c",
-          "time": 2.9,
-          "type": "공격",
-          "composite": false,
-          "sub": [
-            {
-              "id": "69adf28f-c7dd-4a80-a6a7-45e5438e6b5d",
-              "time": 0.5,
-              "type": "대기",
-              "composite": false,
-              "sub": []
-            }
-          ],
-          "indicator": false,
-          "indicatorTime": 0.5,
-          "damage": 0,
-          "shape": "원형",
-          "area": "나로부터거리",
-          "offset": 0.5,
           "sizeA": 1,
-          "sizeB": 0,
-          "zone": "유저추적",
-          "trackPct": 100
+          "ease": "등속",
+          "area": "나로부터거리"
         },
         {
           "id": "235ee104-5445-417d-ba96-447711a96acd",
@@ -159,24 +136,8 @@
           "indicator": true,
           "sizeA": 1,
           "area": "나로부터거리",
-          "offset": 0.5
-        },
-        {
-          "id": "8f51af96-1d64-4b04-a104-5e3cefae8b6d",
-          "time": 2.6,
-          "type": "공격",
-          "composite": false,
-          "sub": [],
-          "indicator": false,
-          "indicatorTime": 0.5,
-          "damage": 0,
-          "shape": "원형",
-          "area": "나로부터거리",
           "offset": 0.5,
-          "sizeA": 1,
-          "sizeB": 0,
-          "zone": "유저추적",
-          "trackPct": 100
+          "ease": "등속"
         }
       ]
     },
@@ -185,37 +146,261 @@
       "name": "달리기",
       "duration": 1,
       "cooldown": 1,
-      "events": []
+      "events": [
+        {
+          "id": "e2557fa2-f52e-4f54-b622-ece613cc3bf0",
+          "time": 0.99,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 7,
+          "side": false
+        }
+      ]
     },
     {
       "id": "29894b65-9c78-4ac0-abf2-88fb84c0eb77",
       "name": "좌우걷기",
       "duration": 1,
       "cooldown": 1,
-      "events": []
-    },
-    {
-      "id": "87f2785a-b9d2-4865-ae55-1d5a0a4f0952",
-      "name": "단검 베기",
-      "duration": 1,
-      "cooldown": 1,
-      "events": []
+      "events": [
+        {
+          "id": "e9081756-58ce-411c-850a-1b94e6869a2a",
+          "time": 1,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 4,
+          "side": true
+        }
+      ]
     },
     {
       "id": "858cb76f-9f35-4190-984d-e80e8bcbaec0",
       "name": "백대쉬 후 작은단검 던지기",
-      "duration": 1,
+      "duration": 3,
       "cooldown": 1,
-      "events": []
+      "events": [
+        {
+          "id": "eeac6397-1aea-4b71-a7bb-9540cdbf1d1b",
+          "time": 0.46,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "00095419-7f37-48ee-bf80-11c6be9099df",
+          "time": 0.67,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "후퇴",
+          "dist": 2,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "ease": "감속"
+        },
+        {
+          "id": "512c721a-5b05-440e-b1d5-8541e2a8b922",
+          "time": 1.2,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "e52a540e-a7f4-4055-be5e-bd50117b0656",
+          "time": 1.67,
+          "type": "대쉬",
+          "composite": true,
+          "sub": [
+            {
+              "id": "a32c1874-89ad-44b2-ac66-e2c30d54d91b",
+              "time": 1.3,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "025cc1c1-3ad2-4f19-aa74-6f094db0c241",
+              "count": 3,
+              "interval": 0,
+              "dir": "직선",
+              "projPath": null,
+              "wallCheck": 0,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            }
+          ],
+          "dir": "후퇴",
+          "dist": 4,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "ease": "감속",
+          "count": 3,
+          "defId": "5ad8a56c-c6dd-4856-8fd9-522c5f939535"
+        }
+      ]
     },
     {
       "id": "15c88d65-86cb-4b97-b227-f55c20dc9cac",
       "name": "포효",
       "duration": 1,
-      "cooldown": 1,
-      "events": []
+      "cooldown": 10,
+      "events": [
+        {
+          "id": "1b35df9e-ffae-4fe3-bf49-0ba07ac994b3",
+          "time": 0.13,
+          "type": "특수효과",
+          "composite": false,
+          "sub": [],
+          "fxColor": "#ff0000",
+          "fxText": "잔인무도 획득"
+        }
+      ]
+    },
+    {
+      "id": "897a216e-8aaa-4b78-af23-0c8b5fb7b1f8",
+      "name": "단검 베기",
+      "duration": 1.5,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "01c57ca6-a432-4121-a420-d89261d82071",
+          "time": 1.01,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.5,
+          "damage": 0,
+          "shape": "원형",
+          "area": "나로부터거리",
+          "offset": 1,
+          "sizeA": 0.8,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100
+        },
+        {
+          "id": "6a26d3ef-3aff-48cf-8a78-3ce91177d46d",
+          "time": 0.84,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "직선",
+          "dist": 1.25,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "ease": "등속"
+        },
+        {
+          "id": "356dcedb-b419-40ee-af3d-0564c7c29b2e",
+          "time": 0.68,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        }
+      ]
+    },
+    {
+      "id": "89cc91a0-194e-4f54-b02d-b24d5733b525",
+      "name": "모드전환",
+      "duration": 0.5,
+      "cooldown": 0,
+      "events": [
+        {
+          "id": "3417e45c-a50b-4187-898b-b0eb4eec0702",
+          "time": 1,
+          "type": "모드전환",
+          "composite": false,
+          "sub": [],
+          "toMode": "토글"
+        }
+      ]
     }
   ],
-  "bt": [],
+  "bt": [
+    {
+      "id": "dbe99b76-3043-447a-b4c1-2b709bc69beb",
+      "mode": "특수",
+      "phaseIdx": -1,
+      "band": -1,
+      "patternId": "15c88d65-86cb-4b97-b227-f55c20dc9cac",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "5e82b0e7-9e44-4736-ae3a-7b080b54dc2c",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "897a216e-8aaa-4b78-af23-0c8b5fb7b1f8",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "b29ed909-12d5-42c8-beeb-6ffa9988e336",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "858cb76f-9f35-4190-984d-e80e8bcbaec0",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "0e03bfec-f8db-41da-a875-1baeee792be1",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "26c2036f-76d8-4953-8765-b64a8385b8de",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "82184de6-b43b-4155-9757-81551cfabc0c",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 2,
+      "patternId": "89cc91a0-194e-4f54-b02d-b24d5733b525",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "9b40c7bb-a8d1-4f35-84fa-987393f55694",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "89cc91a0-194e-4f54-b02d-b24d5733b525",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "75257443-59a4-4cdd-bbce-028570bee26e",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 2,
+      "patternId": "a8217426-9db8-4c32-9a39-dcf7bf053e7e",
+      "inclusive": 4,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "0be00eab-4f7a-4913-8828-89842ce8a2c2",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "29894b65-9c78-4ac0-abf2-88fb84c0eb77",
+      "inclusive": 4,
+      "exclusive": 7,
+      "desc": ""
+    }
+  ],
   "color": "#6a7386"
 }

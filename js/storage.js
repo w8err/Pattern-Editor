@@ -149,6 +149,12 @@ export async function createEntityFile(dirHandle, entity, text) {
   return fh;
 }
 
+// 루트의 고정 이름 파일(정의 문서 등)이 없으면 기본 내용으로 생성. 생성했으면 true.
+export async function ensureRootFile(rootHandle, name, defaultText) {
+  try { await rootHandle.getFileHandle(name); return false; }
+  catch { const fh = await rootHandle.getFileHandle(name, { create: true }); await writeFile(fh, defaultText); return true; }
+}
+
 export async function createFolder(dirHandle, name) {
   const safe = String(name).replace(/[\\/:*?"<>|]/g, '_').trim() || '새폴더';
   return dirHandle.getDirectoryHandle(safe, { create: true });

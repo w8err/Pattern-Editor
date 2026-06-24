@@ -1,5 +1,5 @@
 {
-  "count": 6,
+  "count": 8,
   "files": [
     {
       "path": "몬스터/1챕터/황야 대형.json",
@@ -30,6 +30,16 @@
       "path": "보스/아현 (양).json",
       "kind": "boss",
       "name": "아현 (양)"
+    },
+    {
+      "path": "지형.json",
+      "kind": "terrains",
+      "name": "지형"
+    },
+    {
+      "path": "투사체.json",
+      "kind": "projectiles",
+      "name": "투사체"
     }
   ]
 }

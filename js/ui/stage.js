@@ -4,11 +4,12 @@
 //  더미 유저: 드래그 배치 + 웨이포인트 경로 이동.
 // ============================================================
 import * as sim from '../sim.js';
+import * as lib from '../library.js';
 import { newUser } from '../model.js';
 
 const TYPE_COLORS = {
   대기: '#6e7681', 추적: '#58a6ff', 공격: '#f85149', 걷기: '#3fb950',
-  대쉬: '#bc8cff', 순간이동: '#22d3ee', 투사체: '#f0883e', 지형: '#d29922', 몸회전: '#79c0ff', 모드전환: '#7ee787', 음표카운터: '#ffd33d', 공격각도: '#f0883e', 회복: '#3fb950', 복합: '#db61a2', 종료: '#444',
+  대쉬: '#bc8cff', 순간이동: '#22d3ee', 투사체: '#f0883e', 지형: '#d29922', 몸회전: '#79c0ff', 모드전환: '#7ee787', 음표카운터: '#ffd33d', 공격각도: '#f0883e', 회복: '#3fb950', 특수효과: '#7ee787', 조건점검: '#d2a8ff', 복합: '#db61a2', 종료: '#444',
 };
 const TERRAIN_COLORS = { 지진: '#d29922', 둔화: '#9aa0a6', 용암: '#f85149' };
 const WEAPON_COLORS = ['#ffd33d', '#a371f7']; // 무기 인덱스별 색(0=1번/금, 1=2번/보라)
@@ -462,9 +463,9 @@ export class Playback {
     }
     return { x, y };
   }
-  // 이벤트의 defId → 엔티티 정의 해석(없으면 인라인 fallback)
-  _projDef(ev) { return (this.entity?.projectiles || []).find((p) => p.id === ev.defId) || ev; }
-  _terrDef(ev) { return (this.entity?.terrains || []).find((t) => t.id === ev.defId) || ev; }
+  // 이벤트의 defId → 공유 라이브러리(+레거시 로컬) 해석. 없으면 인라인 fallback(ev).
+  _projDef(ev) { return lib.resolveProj(ev.defId, this.entity) || ev; }
+  _terrDef(ev) { return lib.resolveTerr(ev.defId, this.entity) || ev; }
 
   // ── BT 루프 ─────────────────────────────────────
   _resetBt() {
@@ -479,18 +480,20 @@ export class Playback {
   _stepBt(dt) {
     const b = this.bt, e = this.entity;            // 전역시각 = this._clock (tick에서 이미 +dt)
     for (const k in b.cd) b.cd[k] = Math.max(0, b.cd[k] - dt);
+    // RandomSelect: 모드(공격/수비)가 바뀔 때마다 0~1 난수 1개 재추첨
+    if (b.mode !== b._rsMode) { b.rsValue = Math.random(); b._rsMode = b.mode; }
     const cur = this._userAt(this._clock);          // 현재(라이브) 유저 — 거리/선택용
     const d = Math.hypot(b.state.mx - cur.x, b.state.my - cur.y);
     if (!b.cur) {
       const row = sim.pickPattern(e, {
-        mode: b.mode, phaseIdx: b.phaseIdx, distance: d, cd: b.cd,
+        mode: b.mode, phaseIdx: b.phaseIdx, distance: d, cd: b.cd, rsValue: b.rsValue,
         bt: this._activeBT(), notes: b.notes, usesNotes: this._usesNotes,
         pos: { x: b.state.mx, y: b.state.my }, user: cur, lim: this.field / 2 - (e.size || 0), // 벽 판정
       });
       const p = row && e.patterns.find((x) => x.id === row.patternId);
       if (!p) return;                    // 후보 없음 → 대기
       b.cur = p; b.curRow = row; b.localT = 0; this._btScanT = 0;
-      b.loops = 0; b.repeatDone = false; b.noteScan = 0;
+      b.loops = 0; b.repeatDone = false; b.noteScan = 0; b.condScan = 0;
       b.switches = sim.modeSwitches(p); b.applied = new Set(); b.explicitMode = false;
       // 음표 소모는 특수 패턴 안의 음표카운터(−amount) 이벤트가 처리(예: 0.5s에 −5).
       // 누락 대비 안전망은 특수 종료 시점에서 처리.
@@ -513,6 +516,16 @@ export class Playback {
     // 음표 카운터 스캔(이번 프레임에 새로 도달한 음표 이벤트). 음수 amount면 소모. 0 미만 방지.
     for (const f of r.fires) if (f.type === '음표카운터' && f.time > b.noteScan && f.time <= b.localT) b.notes = Math.max(0, b.notes + (f.amount || 1));
     b.noteScan = b.localT;
+    // 조건점검 스캔: 새로 도달했고 wall=true 면 액션(모드전환 / 패턴중단). 거짓이면 계속.
+    for (const f of r.fires) {
+      if (f.type !== '조건점검' || !f.wall || f.time <= b.condScan || f.time > b.localT) continue;
+      if (f.mode && f.mode !== '없음') { b.mode = sim.resolveMode(f.mode, b.mode); b.explicitMode = true; }
+      if (f.abort) {                              // 패턴 즉시 중단 → BT 재선택
+        b.state = r.state; b.cd[b.cur.id] = b.cur.cooldown || 0;
+        b.cur = null; b.curRow = null; b.condScan = b.localT; return;
+      }
+    }
+    b.condScan = b.localT;
 
     // 하드코딩 반복: repeat.segEnd 도달 시 (거리 조건 + 벽으로 막히지 않음) 이면 구간 재실행.
     //  max = 총 시전 횟수(초기 1회 포함). 벽 때문에 대쉬 불가하면 즉시 중단.
@@ -649,11 +662,10 @@ export class Playback {
     for (const f of fires) {
       const age = tNow - f.time;
       if (f.type === '공격') {
-        if (age < 0 || age > 0.18) continue; // 타격 순간 플래시
-        const a = 1 - age / 0.18; this._drawAttack(f.geom, `rgba(248,81,73,${a})`, true);
-        const up = this._uf(f.time); const [ux, uy] = this.w2s(up.x, up.y);
-        x.fillStyle = f.geom.hit ? '#f85149' : '#8b949e'; x.font = 'bold 12px sans-serif';
-        x.fillText(f.geom.hit ? 'HIT' : 'MISS', ux + 8, uy - 8);
+        const hitDur = 0.3;
+        if (age < 0 || age > Math.max(0.18, hitDur)) continue;
+        if (age <= 0.18) { const a = 1 - age / 0.18; this._drawAttack(f.geom, `rgba(248,81,73,${a})`, true); } // 공격 박스 플래시
+        if (f.geom.hit) this._hitFx(this._uf(f.time), age, hitDur);   // 명중 시 유저 주변 타격 이펙트(텍스트 대신)
       } else if (f.type === '투사체' && !this.playing) {
         // 재생 중엔 월드 투사체(_drawProjWorld)가 그림. 스크럽(정지)에서만 패턴-로컬 미리보기.
         const pd = this._projDef(f.ev);
@@ -688,6 +700,18 @@ export class Playback {
         const [sx, sy] = this.w2s(f.x, f.y);
         x.strokeStyle = `rgba(34,211,238,${a})`; x.lineWidth = 2;
         x.beginPath(); x.arc(sx, sy, (0.3 + age * 6) * this.scale, 0, sim.TAU); x.stroke();
+      } else if (f.type === '조건점검') {
+        if (age < 0 || age > 0.7) continue; const a = 1 - age / 0.7;
+        const [sx, sy] = this.w2s(f.x, f.y);
+        const [ex, ey] = this.w2s(f.x + Math.cos(f.facing) * f.dist, f.y + Math.sin(f.facing) * f.dist);
+        const col = f.wall ? '#f85149' : '#3fb950';
+        x.save(); x.globalAlpha = a;
+        x.strokeStyle = col; x.lineWidth = 2; x.setLineDash([4, 3]);   // 체크 거리 선(facing)
+        x.beginPath(); x.moveTo(sx, sy); x.lineTo(ex, ey); x.stroke(); x.setLineDash([]);
+        x.beginPath(); x.arc(ex, ey, 4, 0, sim.TAU); x.stroke();
+        x.globalAlpha = 1; x.fillStyle = col; x.font = 'bold 11px sans-serif'; x.textAlign = 'center';
+        x.fillText(f.wall ? '벽 감지' : '통과', sx, sy - (this.entity?.size || 0.5) * this.scale - 8);
+        x.textAlign = 'start'; x.restore();
       } else if (f.type === '지형' && !this.playing) {
         // 재생 중이 아닐 때(스크럽)만 패턴 타임라인 기준으로 표시. 재생은 지속 지형(_drawTerrains) 사용.
         const td = this._terrDef(f.ev);
@@ -702,6 +726,25 @@ export class Playback {
         x.fillStyle = `rgba(63,185,80,${a})`; x.font = 'bold 13px sans-serif'; x.textAlign = 'center';
         x.fillText(`+${f.amount} 회복`, sx, sy - (0.4 + age * 5) * this.scale - 4);
         x.textAlign = 'start';
+      } else if (f.type === '특수효과') {
+        // 순수 연출: 무기전환 플래시와 같은 모양 — 퍼지는 이중 링 + 중심 글로우 + 떠오르는 텍스트
+        const dur = 1.1; if (age < 0 || age > dur) continue;
+        const a = 1 - age / dur, [sx, sy] = this.w2s(f.x, f.y), col = f.color || '#7ee787';
+        x.save();
+        x.globalAlpha = a; x.strokeStyle = col; x.lineWidth = 3;
+        x.beginPath(); x.arc(sx, sy, (0.5 + age * 11) * this.scale, 0, sim.TAU); x.stroke();
+        x.globalAlpha = a * 0.6; x.lineWidth = 2;
+        x.beginPath(); x.arc(sx, sy, (0.5 + age * 7) * this.scale, 0, sim.TAU); x.stroke();
+        x.globalAlpha = a * 0.18; x.fillStyle = col;            // 중심 글로우(초반 강함)
+        x.beginPath(); x.arc(sx, sy, (0.3 + age * 4) * this.scale, 0, sim.TAU); x.fill();
+        if (f.text) {                                            // 상단 텍스트(어두운 캡슐 위 색 글자)
+          x.globalAlpha = Math.min(1, a * 1.5); x.font = 'bold 15px sans-serif'; x.textAlign = 'center';
+          const ty = sy - (this.entity?.size || 0.6) * this.scale - 22 - age * 14;
+          const tw = x.measureText(f.text).width;
+          x.fillStyle = 'rgba(0,0,0,0.55)'; x.fillRect(sx - tw / 2 - 8, ty - 14, tw + 16, 19);
+          x.fillStyle = col; x.fillText(f.text, sx, ty); x.textAlign = 'start';
+        }
+        x.restore();
       }
     }
   }
@@ -729,7 +772,31 @@ export class Playback {
     else if (g.kind === 'rect') {
       const [sx, sy] = this.w2s(g.x, g.y); x.translate(sx, sy); x.rotate(g.face);
       x.beginPath(); x.rect(0, -g.wid / 2 * this.scale, g.len * this.scale, g.wid * this.scale); fill && x.fill(); x.stroke();
+    } else if (g.kind === 'cone') {
+      const [sx, sy] = this.w2s(g.x, g.y);
+      x.beginPath(); x.moveTo(sx, sy); x.arc(sx, sy, g.r * this.scale, g.face - g.half, g.face + g.half); x.closePath();
+      fill && x.fill(); x.stroke();
     } else if (g.kind === 'all') { x.fillStyle = color.replace(/[\d.]+\)$/, '0.10)'); x.fillRect(0, 0, this.canvas.width, this.canvas.height); }
+    x.restore();
+  }
+  // 유저 피격 이펙트: 충격 링 + 방사 스파이크 + 초반 흰 코어(타격감)
+  _hitFx(u, age, dur) {
+    const x = this.ctx; const [ux, uy] = this.w2s(u.x, u.y);
+    const p = Math.min(1, age / dur), a = 1 - p;
+    const R = Math.max(5, (this._activeUserDef().size || 0.5) * this.scale);
+    x.save();
+    x.globalAlpha = a; x.strokeStyle = '#ff5a3c'; x.lineWidth = 3;     // 확장 충격 링
+    x.beginPath(); x.arc(ux, uy, R + 4 + p * 18, 0, sim.TAU); x.stroke();
+    x.strokeStyle = '#ffd33d'; x.lineWidth = 2;                       // 방사형 파편
+    const n = 8, r0 = R + 2 + p * 10, r1 = R + 9 + p * 22;
+    for (let i = 0; i < n; i++) {
+      const ang = (i / n) * sim.TAU + 0.2;
+      x.beginPath();
+      x.moveTo(ux + Math.cos(ang) * r0, uy + Math.sin(ang) * r0);
+      x.lineTo(ux + Math.cos(ang) * r1, uy + Math.sin(ang) * r1);
+      x.stroke();
+    }
+    if (p < 0.4) { x.globalAlpha = (0.4 - p) / 0.4; x.fillStyle = '#fff'; x.beginPath(); x.arc(ux, uy, R * 0.9, 0, sim.TAU); x.fill(); } // 흰 코어 플래시
     x.restore();
   }
   _indicators(st, patt) {

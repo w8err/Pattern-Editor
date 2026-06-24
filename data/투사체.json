@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "kind": "projectiles",
+  "name": "투사체",
+  "items": [
+    {
+      "id": "c864a768-92d4-4189-9aeb-e70bf8443e31",
+      "name": "음표 투사체",
+      "damage": 30,
+      "speed": 8,
+      "lifetime": 1.8,
+      "homing": 0,
+      "size": 0.3,
+      "color": "#de9482"
+    },
+    {
+      "id": "bb512901-fbc2-4cf4-b39d-b82543aa0808",
+      "name": "추적음표 투사체",
+      "damage": 30,
+      "speed": 15,
+      "lifetime": 0.9,
+      "homing": 50,
+      "size": 0.3,
+      "color": "#104bd5"
+    },
+    {
+      "id": "a9e8f0f0-4e7c-4651-a4fa-7b7d46d7c873",
+      "name": "단검",
+      "damage": 50,
+      "speed": 12,
+      "lifetime": 1.5,
+      "homing": 0,
+      "size": 0.3,
+      "color": "#b5b5b5"
+    },
+    {
+      "id": "2e32b869-2d53-4661-9bb2-82138060164a",
+      "name": "부메랑",
+      "damage": 50,
+      "speed": 12,
+      "lifetime": 1.5,
+      "homing": 0,
+      "size": 0.3,
+      "color": "#f0883e"
+    }
+  ]
+}

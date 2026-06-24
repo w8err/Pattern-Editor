@@ -5,18 +5,28 @@
   "kind": "monster",
   "hp": 1000,
   "size": 0.4,
-  "rotationSpeed": 360,
+  "rotationSpeed": 720,
   "description": "아직 전투에 미숙한 어린 개체다. \n기동력은 빠르지만 리치가 짧고 체력도 약하다. 단검으로 빠르게 달려들어 빈틈을 노리는 단순하고 직선적인 전투를 한다. ",
   "distanceBands": [
     {
       "name": "근거리",
       "min": 0,
-      "max": 5
+      "max": 4
     },
     {
       "name": "중~장거리",
       "min": 5,
-      "max": 15
+      "max": 999
+    },
+    {
+      "name": "중거리",
+      "min": 4,
+      "max": 7
+    },
+    {
+      "name": "장거리",
+      "min": 7,
+      "max": 999
     }
   ],
   "phases": [
@@ -33,7 +43,7 @@
       "id": "966393ea-218a-4281-bc00-93623effa312",
       "name": "단검 베기",
       "duration": 1.5,
-      "cooldown": 1,
+      "cooldown": 3,
       "events": [
         {
           "id": "61e5233b-38cb-42f5-b889-1153ad524218",
@@ -59,7 +69,7 @@
           "composite": false,
           "sub": [],
           "dir": "직선",
-          "dist": 1,
+          "dist": 1.25,
           "curve": 0.6,
           "track": false,
           "customPath": null
@@ -113,6 +123,49 @@
           "sub": []
         }
       ]
+    },
+    {
+      "id": "6969a6a3-bee4-496d-8fd0-2cd1ae83e2db",
+      "name": "백대쉬",
+      "duration": 1.5,
+      "cooldown": 1,
+      "events": [
+        {
+          "id": "ae5323bb-cd03-4911-aba9-3e96d3ba1cee",
+          "time": 0.97,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "후퇴",
+          "dist": 4,
+          "curve": 0.6,
+          "track": true,
+          "customPath": null
+        },
+        {
+          "id": "71d77658-93d7-4116-93a8-5e303f3f837c",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        }
+      ]
+    },
+    {
+      "id": "0f4b8458-9672-4d79-86dd-c359190b8ca7",
+      "name": "모드전환",
+      "duration": 0.5,
+      "cooldown": 0,
+      "events": [
+        {
+          "id": "5f598a2e-9f05-4311-a5e6-014ee411c6e2",
+          "time": 0.1,
+          "type": "모드전환",
+          "composite": false,
+          "sub": [],
+          "toMode": "토글"
+        }
+      ]
     }
   ],
   "bt": [
@@ -130,9 +183,9 @@
       "id": "c0de8b3f-4431-41f3-ba76-6a38c52759b6",
       "mode": "수비",
       "phaseIdx": -1,
-      "band": -1,
+      "band": 2,
       "patternId": "c0efd4e9-408e-4b54-919b-26b692ffd0f0",
-      "inclusive": 4,
+      "inclusive": 3,
       "exclusive": 7,
       "desc": ""
     },
@@ -140,9 +193,29 @@
       "id": "5ab8bf33-4674-4e98-854c-6baf6a676812",
       "mode": "수비",
       "phaseIdx": -1,
-      "band": 1,
+      "band": 3,
       "patternId": "06ec423b-4593-4efb-8e70-9b36a0474a2c",
-      "inclusive": 4,
+      "inclusive": 3,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "a45b6226-5b61-46ae-b4de-4d0031210988",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "6969a6a3-bee4-496d-8fd0-2cd1ae83e2db",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "37ecbd79-20e4-40ec-9cf1-ed4ab0f6c6a8",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "0f4b8458-9672-4d79-86dd-c359190b8ca7",
+      "inclusive": 0,
       "exclusive": 99,
       "desc": ""
     }

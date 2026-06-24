@@ -19,7 +19,7 @@ async function walk(dir, out) {
     const p = join(dir, name);
     const s = await stat(p);
     if (s.isDirectory()) { await walk(p, out); continue; }
-    if (!name.endsWith('.json') || name === 'manifest.json') continue;
+    if (!name.endsWith('.json') || name === 'manifest.json' || name === 'library.json') continue; // manifest·library는 엔티티 아님
     let kind = null, ename = name.replace(/\.json$/, '');
     try { const d = JSON.parse(await readFile(p, 'utf8')); kind = d.kind || null; if (d.name) ename = d.name; } catch {}
     // 경로는 data/ 기준 상대 + 슬래시 통일

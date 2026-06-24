@@ -4,6 +4,7 @@
 // ============================================================
 import * as store from './storage.js';
 import * as model from './model.js';
+import * as lib from './library.js';
 import { TreeView } from './ui/tree.js';
 import { Inspector } from './ui/inspector.js';
 import { Playback } from './ui/stage.js';
@@ -30,6 +31,7 @@ const tree = new TreeView($('#tree'), {
       } else {
         meta.node = node; // 트리 재생성으로 노드 객체가 새로 생긴 경우 최신화
       }
+      registerDefDoc(meta.entity, node); // 정의 문서면 라이브러리에 (재)등록 → 해석 즉시 반영
       const wasDirty = dirtyKeys.has(key);
       inspector.load(meta.entity, node);
       if (wasDirty) inspector.markDirty(); // 캐시에 남아있던 미저장 상태 복원
@@ -38,7 +40,101 @@ const tree = new TreeView($('#tree'), {
     }
   },
   onChange: () => syncManifest(), // 생성/삭제 후 manifest 자동 갱신
+  onSelect: () => updateEntityClipUI(), // 선택 바뀌면 복사/붙여넣기 버튼 상태 갱신
 });
+
+// ── 공유 정의 문서(투사체.json / 지형.json) ──────────
+const DEF_FILES = { projectiles: '투사체.json', terrains: '지형.json' };
+const defNodes = { projectiles: null, terrains: null }; // 정의 파일 트리 노드(미저장 표시·저장용)
+function registerDefDoc(doc, node) {
+  if (doc?.kind === 'projectiles') { lib.registerProjDoc(doc); if (node) defNodes.projectiles = node; }
+  else if (doc?.kind === 'terrains') { lib.registerTerrDoc(doc); if (node) defNodes.terrains = node; }
+}
+// 트리에서 정의 파일 노드 찾기(이름 기준)
+function findFileNode(n, fname) {
+  if (!n) return null;
+  if (n.kind === 'file' && n.name === fname) return n;
+  for (const c of n.children ?? []) { const r = findFileNode(c, fname); if (r) return r; }
+  return null;
+}
+// 마운트/웹 로드 후: 두 정의 파일을 읽어 라이브러리에 등록(없으면 빈 문서). 해석이 항상 가능하게.
+async function preloadDefs() {
+  lib.resetDocs(); defNodes.projectiles = null; defNodes.terrains = null;
+  for (const [kind, fname] of Object.entries(DEF_FILES)) {
+    const node = findFileNode(tree.rootNode, fname);
+    let doc = null;
+    if (node) {
+      const key = nodeKey(node);
+      let meta = entityCache.get(key);
+      if (!meta) { try { meta = { entity: model.deserialize(JSON.stringify(await readEntity(node))), node }; entityCache.set(key, meta); } catch {} }
+      doc = meta?.entity;
+    }
+    if (!doc) doc = kind === 'projectiles' ? model.newProjLib() : model.newTerrLib();
+    registerDefDoc(doc, node);
+  }
+}
+function markDefDirty(kind) { // 정의 추가/수정 시 해당 파일 미저장 표시
+  const node = defNodes[kind]; if (!node) return;
+  const k = nodeKey(node); if (k) { dirtyKeys.add(k); tree.setDirty(node, true); }
+  updateSaveAllUI();
+}
+// 기존 몬스터/보스에 박힌 정의를 전부 두 문서로 이전 + 파일에서 제거(미저장 → 전체 저장 필요)
+async function consolidateAllDefs() {
+  if (webMode || !localHandle) { toast('이전은 로컬 폴더에서만 가능', true); return; }
+  if (!confirm('모든 몬스터/보스에 박힌 투사체·지형 정의를 공유 문서로 모으고, 각 몬스터에서 제거합니다.\n끝나면 "전체 저장"으로 확정하세요. 계속할까요?')) return;
+  let movedEnt = 0, added = 0;
+  const walk = async (n) => {
+    if (!n) return;
+    if (n.kind === 'file' && !n.web) {
+      const key = nodeKey(n);
+      let meta = entityCache.get(key);
+      if (!meta) { try { meta = { entity: model.deserialize(JSON.stringify(await readEntity(n))), node: n }; entityCache.set(key, meta); } catch { meta = null; } }
+      const e = meta?.entity;
+      if (e && (e.kind === 'monster' || e.kind === 'boss') && lib.hasLocalDefs(e)) {
+        const r = lib.migrateEntity(e); added += r.added; movedEnt++;
+        dirtyKeys.add(key); tree.setDirty(n, true);
+      }
+    }
+    for (const c of n.children ?? []) await walk(c);
+  };
+  await walk(tree.rootNode);
+  if (added) { markDefDirty('projectiles'); markDefDirty('terrains'); }
+  updateSaveAllUI();
+  // 현재 열린 인스펙터 갱신(정의 빠짐 반영)
+  if (inspector.entity) inspector.render();
+  toast(`이전: 몬스터 ${movedEnt}개 · 정의 ${added}개 → 전체 저장하세요`);
+}
+
+// ── 엔티티(몬스터/보스/유저) 복사·붙여넣기 ──────────
+//  클립보드 = localStorage(직렬화 텍스트). 붙여넣기는 로컬 폴더에서만(새 파일 생성 필요).
+const ENT_CLIP = 'bb-editor:entity-clip';
+function saveEntityClip(text) { try { localStorage.setItem(ENT_CLIP, text); } catch {} }
+function loadEntityClip() { try { return localStorage.getItem(ENT_CLIP); } catch { return null; } }
+function updateEntityClipUI() {
+  const sel = tree.selected;
+  const copyBtn = $('#btn-copyent'), pasteBtn = $('#btn-pasteent');
+  if (copyBtn) copyBtn.disabled = !(sel && sel.kind === 'file');
+  if (pasteBtn) pasteBtn.disabled = !(loadEntityClip() && localHandle && !webMode);
+}
+async function copyEntity() {
+  const n = tree.selected;
+  if (!n || n.kind !== 'file') { toast('복사할 엔티티를 선택하세요', true); return; }
+  try {
+    const meta = entityCache.get(nodeKey(n)); // 편집중(미저장)이면 그 내용을 복사
+    const ent = meta ? meta.entity : model.deserialize(JSON.stringify(await readEntity(n)));
+    saveEntityClip(model.serialize(ent));
+    updateEntityClipUI();
+    toast('엔티티 복사됨: ' + ent.name);
+  } catch (err) { toast('복사 실패: ' + err.message, true); }
+}
+async function pasteEntity() {
+  if (webMode || !localHandle) { toast('붙여넣기는 로컬 폴더에서만 가능', true); return; }
+  const raw = loadEntityClip(); if (!raw) return;
+  let ent; try { ent = model.deserialize(raw); } catch { toast('클립 데이터 오류', true); return; }
+  ent.id = model.uid(); // 새 엔티티 식별자
+  try { await tree.addEntity(ent); updateEntityClipUI(); toast('붙여넣기 완료: ' + ent.name); }
+  catch (err) { toast('붙여넣기 실패: ' + err.message, true); }
+}
 
 // ── 다중 파일 편집 세션: 편집 상태를 메모리에 보존 ──────────────
 //  entityCache: 노드별 엔티티(편집중 객체)를 들고 있어 파일 전환에도 편집이 사라지지 않음.
@@ -59,6 +155,12 @@ function resetSession() { entityCache.clear(); dirtyKeys.clear(); updateSaveAllU
 
 // 엔티티 1개를 실제 저장소에 기록(refresh/toast 없음). 저장 종류 문자열 반환.
 async function persistEntityCore(entity, node) {
+  // 정의 문서(투사체/지형): 고정 이름 파일 → 이름변경 없이 그 자리에 기록
+  if (entity?.kind === 'projectiles' || entity?.kind === 'terrains') {
+    if (node?.web) { store.saveWebEdit(node.path, model.serialize(entity)); return 'web'; }
+    await store.writeFile(node.handle, model.serialize(entity));
+    return 'local';
+  }
   if (node?.virtual === 'default-user') {
     store.saveDefaultUser(model.serialize(entity));
     playback.setDefaultUser(defaultUserEntity());
@@ -95,7 +197,7 @@ async function saveAll() {
   if (ok) toast(`전체 저장 완료 (${ok}개)`);
 }
 
-// 전체 저장 버튼/카운트 갱신.
+// 전체 저장 버튼/카운트 갱신. (정의 문서도 일반 파일이라 dirtyKeys에 포함됨)
 function updateSaveAllUI() {
   const n = dirtyKeys.size;
   const btn = $('#btn-saveall');
@@ -136,6 +238,7 @@ const inspector = new Inspector($('#inspector'), {
     tree.setDirty(fileNode, dirty); // 미저장 표시
     updateSaveAllUI();
   },
+  onConsolidate: () => consolidateAllDefs(), // 정의 문서에서 '기존 정의 전체 이전'
 });
 
 // ── 기본 유저(하루): 폴더 없이 편집 가능, localStorage 보존 ──
@@ -174,6 +277,8 @@ $('#btn-newboss').onclick = () => tree.newEntity('boss');
 $('#btn-newmonster').onclick = () => tree.newEntity('monster');
 $('#btn-newuser').onclick = () => tree.newEntity('user');
 $('#btn-del').onclick = () => tree.deleteSelected();
+$('#btn-copyent').onclick = copyEntity;
+$('#btn-pasteent').onclick = pasteEntity;
 
 // 확장 그룹 토글(버튼 오른쪽으로 하위 목록 펼침)
 function makeExpander(btnSel, menuSel) {
@@ -223,9 +328,16 @@ async function setMode(mode) {
 async function mountRoot(handle) {
   if (!(await store.verifyPermission(handle, true))) { toast('폴더 권한이 필요합니다', true); return; }
   resetSession(); // 폴더(루트) 전환 시 편집 캐시 초기화
-  const node = await store.buildTree(handle, null);
   webMode = false; localHandle = handle;
+  // 공유 정의 파일이 없으면 생성 → 트리에 보이도록.
+  //  repo 루트를 열어도 루트가 아니라 data/ 안에 만든다. (data/ 없으면 = data를 직접 연 것 → 그 폴더에)
+  let defDir = handle;
+  try { defDir = await handle.getDirectoryHandle('data'); } catch {}
+  await store.ensureRootFile(defDir, '투사체.json', model.serialize(model.newProjLib()));
+  await store.ensureRootFile(defDir, '지형.json', model.serialize(model.newTerrLib()));
+  const node = await store.buildTree(handle, null);
   tree.setRoot(node);
+  await preloadDefs(); // 정의 문서 읽어 라이브러리 등록
   $('#root-name').textContent = handle.name;
   $('#hint').textContent = '';
   setReady(true);
@@ -249,6 +361,7 @@ async function tryLoadWeb() {
   if (!man) return false;
   webMode = true;
   tree.setRoot(store.buildTreeFromManifest(man));
+  await preloadDefs(); // 정의 문서(투사체.json/지형.json) fetch → 라이브러리 등록
   $('#root-name').textContent = ''; // 세그먼트가 이미 '배포 데이터'를 표시 → 중복 라벨 제거
   $('#hint').textContent = '읽기 전용 · 편집은 이 브라우저에만 저장(공유 안 됨)';
   setReady(false); // 생성/삭제(파일 쓰기) 불가 — 편집·저장(localStorage)은 가능
@@ -271,6 +384,7 @@ function refreshModeUI(mode) {
   else if (savedRoot) $('#btn-reconnect').style.display = '';
   // 로컬 편집 초기화: web 모드 + 오버레이 있을 때만
   $('#btn-web-reset').style.display = (mode === 'web' && store.hasWebEdits()) ? '' : 'none';
+  updateEntityClipUI(); // 모드/마운트 변화 시 붙여넣기 가능 여부 갱신
 }
 
 // 파일 노드 읽기 — 웹(fetch/오버레이) vs FSA(handle) 통합

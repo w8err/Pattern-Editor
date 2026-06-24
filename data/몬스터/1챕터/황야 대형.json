@@ -4,7 +4,7 @@
   "name": "황야 대형",
   "kind": "monster",
   "hp": 1000,
-  "size": 0.7,
+  "size": 0.8,
   "rotationSpeed": 360,
   "description": "무리의 추적자이자 몰이꾼이다. 긴 창으로 근~중거리를 장악하며 압박한다. 체력이 높고 지구력이 강해 쉽게 물러서지 않는다. \n강력한 턱으로 물어뜯는 근접 공격도 사용한다. ",
   "distanceBands": [
@@ -39,30 +39,269 @@
       "name": "걷기",
       "duration": 1,
       "cooldown": 1,
-      "events": []
+      "events": [
+        {
+          "id": "5cb4db19-ed9f-461c-b5d6-6948454976ee",
+          "time": 0.99,
+          "type": "걷기",
+          "composite": false,
+          "sub": [],
+          "speed": 3,
+          "side": false
+        }
+      ]
     },
     {
-      "id": "9615d4ad-13cc-4f6d-9d9c-cafeb1b1ae85",
+      "id": "984cd3c6-8460-4e61-9f88-b342864a2af3",
       "name": "창 찌르기",
-      "duration": 1,
-      "cooldown": 1,
-      "events": []
+      "duration": 3.5,
+      "cooldown": 4,
+      "events": [
+        {
+          "id": "a9bcdf2f-7734-4c14-832d-432f1b14dce9",
+          "time": 0.79,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "86d01b07-1b60-476a-baaa-95fc483cf454",
+          "time": 0.92,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "직선",
+          "dist": 1.5,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "ease": "가속"
+        },
+        {
+          "id": "f8c65706-ad53-48ff-b6c2-e121bf53fb88",
+          "time": 1.07,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.5,
+          "damage": 0,
+          "shape": "사각형",
+          "area": "길이와폭",
+          "offset": 1,
+          "sizeA": 4,
+          "sizeB": 1.5,
+          "zone": "유저추적",
+          "trackPct": 100,
+          "track": true
+        },
+        {
+          "id": "19f80ed4-da6d-436b-9163-6b3a2bcd3905",
+          "time": 1.66,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "26285067-7905-44fc-89f9-e9c797458245",
+          "time": 1.8,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "직선",
+          "dist": 1.5,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "ease": "가속"
+        },
+        {
+          "id": "2a7a34de-2da0-4df2-a6fe-535d96343bce",
+          "time": 2.01,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.5,
+          "damage": 0,
+          "shape": "사각형",
+          "area": "길이와폭",
+          "offset": 1,
+          "sizeA": 4,
+          "sizeB": 1.5,
+          "zone": "유저추적",
+          "trackPct": 100,
+          "track": true
+        }
+      ]
     },
     {
-      "id": "b6895cba-4486-4d91-9c04-97b6653b92a3",
+      "id": "b40625e3-f3f9-41e0-bd9c-88480ddf63ba",
       "name": "창 휩쓸기",
-      "duration": 1,
-      "cooldown": 1,
-      "events": []
+      "duration": 2.3,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "5ddbfac4-c86b-42a8-a88e-d31a0494b746",
+          "time": 1.38,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.5,
+          "damage": 0,
+          "shape": "부채꼴",
+          "area": "지름",
+          "offset": 0,
+          "sizeA": 5,
+          "sizeB": 0,
+          "zone": "유저추적",
+          "trackPct": 100,
+          "coneAngle": 180
+        },
+        {
+          "id": "3ef6c007-177f-442d-ba43-cf862db46210",
+          "time": 1.13,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "0e74e1b8-ca76-46f5-ab97-a89e132dcb46",
+          "time": 1.33,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "직선",
+          "dist": 1,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "ease": "감속"
+        },
+        {
+          "id": "e9c38202-8537-44c4-b08b-c805b3f39e04",
+          "time": 0.5,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        }
+      ]
     },
     {
-      "id": "ca3bf45b-ea63-41a3-b925-1cbe5ce26224",
+      "id": "da36d956-40e1-442e-b458-ac3022a5e9fe",
       "name": "물어뜯기",
-      "duration": 1,
-      "cooldown": 1,
-      "events": []
+      "duration": 2.5,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "09816b74-b6e4-4f24-9c98-91f51c9d5a6e",
+          "time": 0.96,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "ae759585-2eb3-46a3-b967-8495d8ddc36b",
+          "time": 1.69,
+          "type": "공격",
+          "composite": false,
+          "sub": [],
+          "indicator": true,
+          "indicatorTime": 0.5,
+          "damage": 0,
+          "shape": "사각형",
+          "area": "나로부터거리",
+          "offset": 0.5,
+          "sizeA": 2.5,
+          "sizeB": 2.5,
+          "zone": "유저추적",
+          "trackPct": 100,
+          "coneAngle": 180
+        },
+        {
+          "id": "6a7ffffe-e634-471f-9001-b281dea780a1",
+          "time": 1.46,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "직선",
+          "dist": 1.5,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "ease": "감속"
+        }
+      ]
+    },
+    {
+      "id": "0ac76b46-6012-4675-9f57-616c944b431e",
+      "name": "모드전환",
+      "duration": 0.5,
+      "cooldown": 0,
+      "events": [
+        {
+          "id": "f1bf2b47-89b8-4c22-a64b-80db47e69cce",
+          "time": 0.5,
+          "type": "모드전환",
+          "composite": false,
+          "sub": [],
+          "toMode": "토글"
+        }
+      ]
     }
   ],
-  "bt": [],
+  "bt": [
+    {
+      "id": "a1d3068c-f588-4155-9885-68f54dc88df7",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "da36d956-40e1-442e-b458-ac3022a5e9fe",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "8c0d718a-bad7-4ac8-b3e7-7ce968e60e96",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "b40625e3-f3f9-41e0-bd9c-88480ddf63ba",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "ab2253ee-6328-4063-9bae-2285d8401ecf",
+      "mode": "공격",
+      "phaseIdx": 0,
+      "band": 1,
+      "patternId": "984cd3c6-8460-4e61-9f88-b342864a2af3",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "8f002871-0197-403e-8044-7674166fd2da",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 2,
+      "patternId": "0ac76b46-6012-4675-9f57-616c944b431e",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": ""
+    },
+    {
+      "id": "05e52ed1-0cfd-4011-8f5f-86ae06cd1f7c",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": -1,
+      "patternId": "5f1a8023-4c74-4c1e-90a3-47f2948aef19",
+      "inclusive": 4,
+      "exclusive": 99,
+      "desc": ""
+    }
+  ],
   "color": "#9c5454"
 }

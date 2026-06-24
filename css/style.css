@@ -134,6 +134,20 @@ textarea{width:100%;resize:vertical}
 .pt-name{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pt-meta{font-size:11px;color:var(--dim);white-space:nowrap}
 
+/* 배포 데이터 읽기전용 안내 배너 */
+.web-notice{margin:0 0 10px;padding:7px 10px;font-size:11.5px;line-height:1.5;color:#ffd9a0;background:#f0883e1a;border:1px solid #f0883e55;border-radius:6px}
+.web-notice b{color:#ffb86b}
+
+/* 드래그 정렬(패턴 리스트 · BT 표 공용) */
+.drag-handle{cursor:grab;color:var(--dim);user-select:none;flex-shrink:0;padding:0 2px}
+.drag-handle:hover{color:var(--accent)}
+.bt-i.drag-handle:hover{color:var(--accent);background:#1f6feb22}
+.dragging{opacity:.5}
+.drag-over{box-shadow:inset 0 2px 0 0 var(--accent)}
+.drag-over-end{box-shadow:inset 0 -2px 0 0 var(--accent)}
+tr.drag-over td{box-shadow:inset 0 2px 0 0 var(--accent)}
+tr.drag-over-end td{box-shadow:inset 0 -2px 0 0 var(--accent)}
+
 /* 패턴 상세 */
 .pat-detail{margin:8px 0 4px;padding:10px;background:var(--bg2);border:1px solid var(--line);border-radius:8px}
 .pat-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -181,6 +195,9 @@ textarea{width:100%;resize:vertical}
 .bt-table select,.bt-table input{font-size:11px;padding:2px 3px;width:100%;min-width:52px}
 .bt-table input.bt-desc{min-width:120px}   /* 설명칸은 조금 더 넓게 */
 .bt-i{text-align:center;color:var(--dim)}
+.bt-rs-chk{text-align:center}
+.bt-rs{white-space:nowrap;color:var(--dim);font-size:11px}
+.bt-rs-in{width:42px}
 .bt-cd{text-align:center;color:var(--dim)}
 .bt-act{white-space:nowrap}
 .bt-row.mode-atk{border-left:3px solid #f85149}

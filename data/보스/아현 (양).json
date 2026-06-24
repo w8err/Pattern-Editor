@@ -55,25 +55,6 @@
       "transitionPatternId": null
     }
   ],
-  "projectiles": [
-    {
-      "id": "note_proj",
-      "name": "음표 투사체",
-      "damage": 30,
-      "speed": 8,
-      "lifetime": 1.8,
-      "homing": 0
-    },
-    {
-      "id": "track_note",
-      "name": "추적음표 투사체",
-      "damage": 30,
-      "speed": 15,
-      "lifetime": 0.9,
-      "homing": 50
-    }
-  ],
-  "terrains": [],
   "patterns": [
     {
       "id": "sinseon",
@@ -105,7 +86,8 @@
           "dist": 6,
           "curve": 0.6,
           "track": false,
-          "customPath": null
+          "customPath": null,
+          "ease": "등속"
         }
       ]
     },
@@ -160,13 +142,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "note_proj",
+          "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
           "count": 3,
           "interval": 0,
           "dir": "랜덤360",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         },
         {
           "id": "jm-v2",
@@ -174,13 +156,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "note_proj",
+          "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
           "count": 3,
           "interval": 0,
           "dir": "랜덤360",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         },
         {
           "id": "jm-v3",
@@ -188,13 +170,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "note_proj",
+          "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
           "count": 3,
           "interval": 0,
           "dir": "랜덤360",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         },
         {
           "id": "jm-n",
@@ -241,7 +223,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "note_proj",
+              "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
               "count": 1,
               "interval": 0,
               "dir": "유저조준",
@@ -255,7 +237,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "note_proj",
+              "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
               "count": 1,
               "interval": 0,
               "dir": "유저조준",
@@ -269,7 +251,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "note_proj",
+              "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
               "count": 1,
               "interval": 0,
               "dir": "유저조준",
@@ -277,7 +259,8 @@
               "expireAction": "없음",
               "expireAttackEventId": null
             }
-          ]
+          ],
+          "ease": "등속"
         },
         {
           "id": "jj-n",
@@ -329,7 +312,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "note_proj",
+              "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
               "count": 10,
               "interval": 0.1,
               "dir": "공격각도내 랜덤",
@@ -368,13 +351,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "note_proj",
+          "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
           "count": 12,
           "interval": 0,
           "dir": "균일360",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         }
       ]
     },
@@ -398,13 +381,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "note_proj",
+          "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
           "count": 3,
           "interval": 0,
           "dir": "랜덤360",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         },
         {
           "id": "jmh-t1",
@@ -412,13 +395,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "track_note",
+          "defId": "bb512901-fbc2-4cf4-b39d-b82543aa0808",
           "count": 2,
           "interval": 0,
           "dir": "유저조준",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         },
         {
           "id": "jmh-v2",
@@ -426,13 +409,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "note_proj",
+          "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
           "count": 3,
           "interval": 0,
           "dir": "랜덤360",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         },
         {
           "id": "jmh-t2",
@@ -440,13 +423,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "track_note",
+          "defId": "bb512901-fbc2-4cf4-b39d-b82543aa0808",
           "count": 2,
           "interval": 0,
           "dir": "유저조준",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         },
         {
           "id": "jmh-v3",
@@ -454,13 +437,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "note_proj",
+          "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
           "count": 3,
           "interval": 0,
           "dir": "랜덤360",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         },
         {
           "id": "jmh-t3",
@@ -468,13 +451,13 @@
           "type": "투사체",
           "composite": false,
           "sub": [],
-          "defId": "track_note",
+          "defId": "bb512901-fbc2-4cf4-b39d-b82543aa0808",
           "count": 2,
           "interval": 0,
           "dir": "유저조준",
-          "customSpawns": null,
           "expireAction": "없음",
-          "expireAttackEventId": null
+          "expireAttackEventId": null,
+          "projPath": null
         },
         {
           "id": "jmh-n",
@@ -521,7 +504,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "note_proj",
+              "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
               "count": 1,
               "interval": 0,
               "dir": "유저조준",
@@ -535,7 +518,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "track_note",
+              "defId": "bb512901-fbc2-4cf4-b39d-b82543aa0808",
               "count": 1,
               "interval": 0,
               "dir": "유저조준",
@@ -549,7 +532,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "note_proj",
+              "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
               "count": 1,
               "interval": 0,
               "dir": "유저조준",
@@ -563,7 +546,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "track_note",
+              "defId": "bb512901-fbc2-4cf4-b39d-b82543aa0808",
               "count": 1,
               "interval": 0,
               "dir": "유저조준",
@@ -577,7 +560,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "note_proj",
+              "defId": "c864a768-92d4-4189-9aeb-e70bf8443e31",
               "count": 1,
               "interval": 0,
               "dir": "유저조준",
@@ -591,7 +574,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "track_note",
+              "defId": "bb512901-fbc2-4cf4-b39d-b82543aa0808",
               "count": 1,
               "interval": 0,
               "dir": "유저조준",
@@ -599,7 +582,8 @@
               "expireAction": "없음",
               "expireAttackEventId": null
             }
-          ]
+          ],
+          "ease": "등속"
         },
         {
           "id": "jjh-n",
@@ -651,7 +635,7 @@
               "type": "투사체",
               "composite": false,
               "sub": [],
-              "defId": "track_note",
+              "defId": "bb512901-fbc2-4cf4-b39d-b82543aa0808",
               "count": 10,
               "interval": 0.1,
               "dir": "공격각도내 랜덤",
@@ -901,5 +885,6 @@
   "specialModePatternIds": [
     "himori",
     "jinyangjo"
-  ]
+  ],
+  "color": "#f0883e"
 }
