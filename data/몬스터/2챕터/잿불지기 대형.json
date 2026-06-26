@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "id": "f96bfd37-1ffa-4c5c-b05d-0e2946e2d825",
+  "name": "잿불지기 대형",
+  "kind": "monster",
+  "hp": 1000,
+  "size": 0.6,
+  "rotationSpeed": 360,
+  "color": "#3fb950",
+  "description": "",
+  "distanceBands": [
+    {
+      "name": "근거리",
+      "min": 0,
+      "max": 3
+    },
+    {
+      "name": "중거리",
+      "min": 3,
+      "max": 8
+    },
+    {
+      "name": "장거리",
+      "min": 8,
+      "max": 99
+    }
+  ],
+  "phases": [
+    {
+      "name": "기본",
+      "hp": 1000,
+      "transitionPatternId": null
+    }
+  ],
+  "patterns": [],
+  "bt": []
+}

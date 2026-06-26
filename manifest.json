@@ -1,5 +1,5 @@
 {
-  "count": 12,
+  "count": 17,
   "files": [
     {
       "path": ".claude/launch.json",
@@ -45,6 +45,31 @@
       "path": "data/몬스터/1챕터/황야 중형.json",
       "kind": "monster",
       "name": "황야 중형"
+    },
+    {
+      "path": "data/몬스터/2챕터/잿불지기 대형.json",
+      "kind": "monster",
+      "name": "잿불지기 대형"
+    },
+    {
+      "path": "data/몬스터/2챕터/잿불지기 소형.json",
+      "kind": "monster",
+      "name": "잿불지기 소형"
+    },
+    {
+      "path": "data/몬스터/2챕터/잿불지기 중형.json",
+      "kind": "monster",
+      "name": "잿불지기 중형"
+    },
+    {
+      "path": "data/몬스터/2챕터/청화구장승.json",
+      "kind": "monster",
+      "name": "청화구장승"
+    },
+    {
+      "path": "data/몬스터/2챕터/청화산견.json",
+      "kind": "monster",
+      "name": "청화산견"
     },
     {
       "path": "data/보스/아현 (양).json",
