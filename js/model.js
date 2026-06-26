@@ -222,6 +222,7 @@ function migrate(data) {
   data.description ??= '';
   if (data.hp == null) data.hp = data.phases.reduce((s, p) => s + (p.hp || 0), 0) || 1000;
   data.color ??= (data.kind === 'boss' ? '#f0883e' : '#3fb950'); // 폰 색 보강
+  data.visualWeapon ??= null; // 시뮬레이터 폰에 붙는 비주얼 무기(예: 'axe'). 기본 없음.
   for (const b of data.distanceBands) b.min ??= 0;
   for (const d of (data.projectiles || [])) { d.size ??= 0.3; d.color ??= '#f0883e'; } // 레거시 로컬 정의 보강
   // 패턴: 공격/이동 분류 제거, 이벤트 composite/sub 보강

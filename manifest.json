@@ -1,5 +1,5 @@
 {
-  "count": 17,
+  "count": 18,
   "files": [
     {
       "path": ".claude/launch.json",
@@ -70,6 +70,11 @@
       "path": "data/몬스터/2챕터/청화산견.json",
       "kind": "monster",
       "name": "청화산견"
+    },
+    {
+      "path": "data/보스/3챕터 보스, 백야  (호랑이).json",
+      "kind": "boss",
+      "name": "3챕터 보스, 백야  (호랑이)"
     },
     {
       "path": "data/보스/아현 (양).json",

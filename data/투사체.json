@@ -42,6 +42,26 @@
       "homing": 0,
       "size": 0.3,
       "color": "#f0883e"
+    },
+    {
+      "id": "1bf8abb3-7ee5-4c69-bc31-8451e6845bc7",
+      "name": "영혼",
+      "damage": 35,
+      "speed": 3,
+      "lifetime": 1.6,
+      "homing": 0,
+      "size": 0.35,
+      "color": "#9ec5ff"
+    },
+    {
+      "id": "16205511-4dbe-446b-964e-f8543b072f1a",
+      "name": "유도 서리",
+      "damage": 30,
+      "speed": 11,
+      "lifetime": 1,
+      "homing": 45,
+      "size": 0.3,
+      "color": "#6db3f2"
     }
   ]
 }

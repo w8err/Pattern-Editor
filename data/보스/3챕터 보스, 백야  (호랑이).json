@@ -1,0 +1,435 @@
+{
+  "schema": 1,
+  "id": "boss_baekya",
+  "name": "3챕터 보스, 백야  (호랑이)",
+  "kind": "boss",
+  "hp": 4000,
+  "size": 1,
+  "rotationSpeed": 280,
+  "color": "#c0c8d4",
+  "visualWeapon": "axe",
+  "description": "4챕터 보스. 새 시스템·복잡한 기믹 없이 설계. 긴 리치의 도끼 패턴(횡베기·내려찍기·전진 슬램)으로 플레이어의 공간을 좁히고, 공격마다 냉기 파편/유도 서리가 생성돼 압박을 더한다. 공격이 둔화(서리) 장판을 남겨 부정적 상태효과가 누적된다. 폰에 큰 도끼가 비주얼로 붙는다(visualWeapon).",
+  "distanceBands": [
+    {
+      "name": "근거리",
+      "min": 0,
+      "max": 4
+    },
+    {
+      "name": "중거리",
+      "min": 4,
+      "max": 8
+    },
+    {
+      "name": "장거리",
+      "min": 8,
+      "max": 99
+    }
+  ],
+  "phases": [
+    {
+      "name": "백야 1막",
+      "hp": 2000,
+      "transitionPatternId": null
+    },
+    {
+      "name": "백야 2막",
+      "hp": 2000,
+      "transitionPatternId": null
+    }
+  ],
+  "patterns": [
+    {
+      "id": "jangwol",
+      "name": "장월참",
+      "duration": 2.2,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "jw-f",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jw-c",
+          "time": 0.7,
+          "type": "공격각도",
+          "composite": false,
+          "sub": [],
+          "angle": 110
+        },
+        {
+          "id": "jw-w",
+          "time": 0.9,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "jw-atk",
+          "time": 1.7,
+          "type": "공격",
+          "composite": true,
+          "indicator": true,
+          "indicatorTime": 0.7,
+          "damage": 120,
+          "shape": "부채꼴",
+          "area": "지름",
+          "offset": 0,
+          "sizeA": 9,
+          "sizeB": 0,
+          "coneAngle": 110,
+          "zone": "유저추적",
+          "trackPct": 100,
+          "sub": [
+            {
+              "id": "jw-p",
+              "time": 1.7,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "1bf8abb3-7ee5-4c69-bc31-8451e6845bc7",
+              "count": 5,
+              "interval": 0,
+              "dir": "공격각도내 랜덤",
+              "projPath": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            },
+            {
+              "id": "jw-fx",
+              "time": 1.72,
+              "type": "특수효과",
+              "composite": false,
+              "sub": [],
+              "fxColor": "#9ec5ff",
+              "fxText": "서리 1중첩"
+            }
+          ]
+        },
+        {
+          "id": "jw-end",
+          "time": 2.2,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        }
+      ]
+    },
+    {
+      "id": "sakwol",
+      "name": "삭월낙",
+      "duration": 2.1,
+      "cooldown": 4,
+      "events": [
+        {
+          "id": "sw-f",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "sw-w",
+          "time": 0.8,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "sw-atk",
+          "time": 1.6,
+          "type": "공격",
+          "composite": true,
+          "indicator": true,
+          "indicatorTime": 0.7,
+          "damage": 160,
+          "shape": "사각형",
+          "area": "길이와폭",
+          "offset": 0,
+          "sizeA": 8,
+          "sizeB": 2.6,
+          "coneAngle": 90,
+          "zone": "유저추적",
+          "trackPct": 100,
+          "sub": [
+            {
+              "id": "sw-t",
+              "time": 1.62,
+              "type": "지형",
+              "composite": false,
+              "sub": [],
+              "defId": "489dd23f-3a30-4e1f-a479-1321fddbdfb1",
+              "count": 1,
+              "pos": "몬스터 위치",
+              "offset": 4
+            },
+            {
+              "id": "sw-fx",
+              "time": 1.64,
+              "type": "특수효과",
+              "composite": false,
+              "sub": [],
+              "fxColor": "#9ec5ff",
+              "fxText": "둔화 장판"
+            }
+          ]
+        },
+        {
+          "id": "sw-end",
+          "time": 2.1,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        }
+      ]
+    },
+    {
+      "id": "hanwol",
+      "name": "한월쇄",
+      "duration": 2.6,
+      "cooldown": 5,
+      "events": [
+        {
+          "id": "hw-f",
+          "time": 0.4,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "hw-d",
+          "time": 1.2,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "직선",
+          "dist": 6,
+          "curve": 0.6,
+          "track": true,
+          "customPath": null,
+          "ease": "가속"
+        },
+        {
+          "id": "hw-f2",
+          "time": 1.4,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "hw-atk",
+          "time": 2.2,
+          "type": "공격",
+          "composite": true,
+          "indicator": true,
+          "indicatorTime": 0.6,
+          "damage": 110,
+          "shape": "원형",
+          "area": "지름",
+          "offset": 0,
+          "sizeA": 6,
+          "sizeB": 0,
+          "coneAngle": 90,
+          "zone": "유저추적",
+          "trackPct": 100,
+          "sub": [
+            {
+              "id": "hw-p",
+              "time": 2.2,
+              "type": "투사체",
+              "composite": false,
+              "sub": [],
+              "defId": "1bf8abb3-7ee5-4c69-bc31-8451e6845bc7",
+              "count": 8,
+              "interval": 0,
+              "dir": "균일360",
+              "projPath": null,
+              "expireAction": "없음",
+              "expireAttackEventId": null
+            },
+            {
+              "id": "hw-fx",
+              "time": 2.24,
+              "type": "특수효과",
+              "composite": false,
+              "sub": [],
+              "fxColor": "#9ec5ff",
+              "fxText": "충격파"
+            }
+          ]
+        },
+        {
+          "id": "hw-end",
+          "time": 2.6,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        }
+      ]
+    },
+    {
+      "id": "bingbaek",
+      "name": "빙백격",
+      "duration": 1.8,
+      "cooldown": 3,
+      "events": [
+        {
+          "id": "bb-f",
+          "time": 0.5,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "bb-p1",
+          "time": 0.9,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "1bf8abb3-7ee5-4c69-bc31-8451e6845bc7",
+          "count": 3,
+          "interval": 0,
+          "dir": "유저조준",
+          "projPath": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "bb-p2",
+          "time": 1.3,
+          "type": "투사체",
+          "composite": false,
+          "sub": [],
+          "defId": "16205511-4dbe-446b-964e-f8543b072f1a",
+          "count": 2,
+          "interval": 0,
+          "dir": "유저조준",
+          "projPath": null,
+          "expireAction": "없음",
+          "expireAttackEventId": null
+        },
+        {
+          "id": "bb-end",
+          "time": 1.8,
+          "type": "대기",
+          "composite": false,
+          "sub": []
+        }
+      ]
+    },
+    {
+      "id": "bobeop",
+      "name": "보법",
+      "duration": 1.1,
+      "cooldown": 1.5,
+      "events": [
+        {
+          "id": "bo-f",
+          "time": 0.4,
+          "type": "추적",
+          "composite": false,
+          "sub": []
+        },
+        {
+          "id": "bo-d",
+          "time": 1,
+          "type": "대쉬",
+          "composite": false,
+          "sub": [],
+          "dir": "좌우",
+          "dist": 5,
+          "curve": 0.6,
+          "track": false,
+          "customPath": null,
+          "ease": "등속"
+        }
+      ]
+    }
+  ],
+  "bt": [
+    {
+      "id": "by-d-1",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "bobeop",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "근거리 좌우 보법(자리잡기)"
+    },
+    {
+      "id": "by-d-2",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "bingbaek",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "중거리 투사체 견제"
+    },
+    {
+      "id": "by-d-3",
+      "mode": "수비",
+      "phaseIdx": -1,
+      "band": 2,
+      "patternId": "bingbaek",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "장거리 투사체 압박"
+    },
+    {
+      "id": "by-a-1",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 0,
+      "patternId": "jangwol",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "근거리 긴 횡베기 + 부채꼴 파편"
+    },
+    {
+      "id": "by-a-2",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "sakwol",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "중거리 내려찍기 + 둔화 장판"
+    },
+    {
+      "id": "by-a-3",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 1,
+      "patternId": "hanwol",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "중거리 전진 슬램"
+    },
+    {
+      "id": "by-a-4",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 2,
+      "patternId": "hanwol",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "장거리 전진 좁히기 슬램"
+    },
+    {
+      "id": "by-a-5",
+      "mode": "공격",
+      "phaseIdx": -1,
+      "band": 2,
+      "patternId": "bingbaek",
+      "inclusive": 0,
+      "exclusive": 99,
+      "desc": "장거리 투사체 압박"
+    }
+  ],
+  "specialModePatternIds": []
+}

@@ -13,6 +13,9 @@ const TYPE_COLORS = {
 };
 const TERRAIN_COLORS = { 지진: '#d29922', 둔화: '#9aa0a6', 용암: '#f85149' };
 const WEAPON_COLORS = ['#ffd33d', '#a371f7']; // 무기 인덱스별 색(0=1번/금, 1=2번/보라)
+// 비주얼 무기(도끼) 스프라이트 규격 — pngwing.com.png(512²) 측정값.
+//  grip=손잡이 끝(회전 피벗) · axisPx=grip→날끝 거리 · imgAim=그 축의 이미지 내 각도(rad, y아래 +).
+const AXE = { src: 'data/Images/pngwing.com.png', W: 512, H: 512, gripX: 40, gripY: 472, axisPx: 580, imgAim: -0.6263, tint: '#c9d1d9' };
 
 export class Playback {
   static MAX_BACKING = 820; // 캔버스 백킹 해상도 상한(px). 큰 창에서 GPU fill-rate 병목 방지.
@@ -36,6 +39,7 @@ export class Playback {
     this._buildControls();
     this._bindUserControls();
     this._bindCanvas();
+    this._loadAxe();
     this.resize();
     window.addEventListener('resize', () => this.resize());
     this.render();
@@ -585,6 +589,7 @@ export class Playback {
     this._coneFan(fires, localT, state);   // 공격각도 부채꼴(투사체 아래)
     this._fires(fires, localT, state);
     this._indicators(state, patt);
+    this._wpPatt = patt; this._wpT = localT; // 비주얼 무기 포즈용(현재 패턴·로컬시각)
     this._monster(state);
     this._drawWeaponFx(state);
     // 음표 카운터: BT=누적 상태 / 단일=재생 중 누적(_singleNotes) · 스크럽 중엔 현재 시각까지의 합
@@ -810,8 +815,62 @@ export class Playback {
       this._drawAttack(sim.attackGeom(ev, st, this._uf(t)), `rgba(248,81,73,${0.25 + 0.6 * k})`, false);
     }
   }
+  // ── 비주얼 무기(도끼) ───────────────────────────
+  //  검은 실루엣 PNG를 한 번 로드 → 스틸색으로 틴팅(source-in)해 캐시. 배경에 묻히지 않게.
+  _loadAxe() {
+    if (this._axeImg) return;
+    const img = new Image();
+    img.onload = () => { this._axeImg = img; this._tintAxe(AXE.tint); this.render(); };
+    img.onerror = () => { this._axeImg = null; };
+    img.src = AXE.src;
+  }
+  _tintAxe(color) {
+    const img = this._axeImg; if (!img) return;
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const g = c.getContext('2d');
+    g.drawImage(img, 0, 0);
+    g.globalCompositeOperation = 'source-in'; // 불투명 영역만 단색으로(알파 유지)
+    g.fillStyle = color; g.fillRect(0, 0, c.width, c.height);
+    this._axeTinted = c;
+  }
+  // 도끼 포즈 = facing 기준 오프셋 각. idle은 어깨에 걸친 모습, 공격 이벤트 근처에선 윈드업→스윙.
+  _axePose(patt, localT) {
+    const IDLE = -0.5, SWING = 0.22, RECOVER = 0.5; // 윈드업→스윙(0.22s)→회복(0.5s) 후 idle 복귀
+    if (!patt) return IDLE;
+    const evs = [...patt.events, ...patt.events.filter((e) => e.composite).flatMap((e) => e.sub || [])];
+    let best = null;
+    for (const ev of evs) {
+      if (ev.type !== '공격') continue;
+      const ind = ev.indicator ? (ev.indicatorTime || 0) : 0;
+      if (localT >= ev.time - ind && localT <= ev.time + SWING + RECOVER && (!best || ev.time > best.time)) best = ev;
+    }
+    if (!best) return IDLE;
+    const ind = best.indicator ? (best.indicatorTime || 0) : 0;
+    // shape별 윈드업/타격 오프셋: 부채꼴=가로 베기(한쪽→반대쪽), 사각/원형=내려찍기(위→앞)
+    let windup, strike;
+    if (best.shape === '부채꼴') { const half = ((best.coneAngle ?? 90) * Math.PI / 180) / 2 + 0.35; windup = -half; strike = half; }
+    else { windup = -1.9; strike = 0.05; }
+    if (localT < best.time) { const p = ind > 0 ? (localT - (best.time - ind)) / ind : 1; return IDLE + (windup - IDLE) * (p * p); } // 들어올림(ease-in)
+    if (localT <= best.time + SWING) { const p = (localT - best.time) / SWING; return windup + (strike - windup) * (1 - (1 - p) * (1 - p)); } // 베기(ease-out)
+    const p = Math.min(1, (localT - (best.time + SWING)) / RECOVER); return strike + (IDLE - strike) * (1 - (1 - p) * (1 - p)); // 회복: 타격→idle 부드럽게
+  }
+  _drawWeapon(st, patt, localT) {
+    const tin = this._axeTinted; if (!tin) return;
+    const x = this.ctx;
+    const axeLenM = Math.max(2.2, (this.entity?.size || 0.6) * 3.3); // 캐릭터보다 큰 도끼
+    const sc = (axeLenM * this.scale) / AXE.axisPx;
+    const [hx, hy] = this.w2s(st.mx, st.my); // 손=폰 중심(grip을 여기 놓고 회전 → 자루 끝이 몸에 묻힘)
+    const aim = st.facing + this._axePose(patt, localT);
+    x.save();
+    x.translate(hx, hy); x.rotate(aim - AXE.imgAim);
+    x.shadowColor = 'rgba(0,0,0,0.5)'; x.shadowBlur = 6;
+    x.drawImage(tin, -AXE.gripX * sc, -AXE.gripY * sc, AXE.W * sc, AXE.H * sc);
+    x.restore();
+  }
   _monster(st) {
     const x = this.ctx; const [sx, sy] = this.w2s(st.mx, st.my); const r = (this.entity?.size || 0.6) * this.scale; const rr = Math.max(6, r);
+    // 비주얼 무기: 폰(원) 아래에 먼저 그려 자루가 몸에 들리는 느낌 + 항상 facing/위치 따라감
+    if (this.entity?.visualWeapon === 'axe') this._drawWeapon(st, this._wpPatt, this._wpT);
     // 무기 상태: BT + 이중 무기일 때 무기색 굵은 링 + 이름표
     if (this.mode === 'bt' && this._hasDual) {
       const wc = WEAPON_COLORS[this.bt?.weapon || 0] || '#fff';

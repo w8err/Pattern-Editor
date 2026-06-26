@@ -69,6 +69,7 @@ export class Inspector {
           <label>크기(반경 m)<input id="f-size" type="number" step="0.05" value="${e.size}"></label>
           <label>회전속도(°/s)<input id="f-rot" type="number" step="10" value="${e.rotationSpeed}"></label>
           <label>폰 색상<input id="f-color" type="color" value="${e.color || (isBoss ? '#f0883e' : '#3fb950')}"></label>
+          <label>비주얼 무기<select id="f-weapon"><option value="">없음</option><option value="axe" ${e.visualWeapon === 'axe' ? 'selected' : ''}>도끼</option></select></label>
         </div>
 
         <div class="sec-hd">거리밴드 <button id="add-band" class="mini">+</button></div>
@@ -94,6 +95,7 @@ export class Inspector {
     this.el.querySelector('#f-size').oninput = (ev) => { e.size = +ev.target.value; this._mark(); };
     this.el.querySelector('#f-rot').oninput = (ev) => { e.rotationSpeed = +ev.target.value; this._mark(); };
     this.el.querySelector('#f-color').oninput = (ev) => { e.color = ev.target.value; this._mark(); this.onEntityLoad?.(e); }; // 색 변경 즉시 렌더 반영
+    this.el.querySelector('#f-weapon').onchange = (ev) => { e.visualWeapon = ev.target.value || null; this._mark(); this.onEntityLoad?.(e); }; // 비주얼 무기 즉시 반영
     this.el.querySelector('#f-desc').oninput = (ev) => { e.description = ev.target.value; this._mark(); };
 
     this._renderBands();

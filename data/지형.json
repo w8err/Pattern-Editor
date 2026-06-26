@@ -2,5 +2,20 @@
   "schema": 1,
   "kind": "terrains",
   "name": "지형",
-  "items": []
+  "items": [
+    {
+      "id": "489dd23f-3a30-4e1f-a479-1321fddbdfb1",
+      "name": "서리 장판",
+      "terrain": "둔화",
+      "size": 4,
+      "duration": 5
+    },
+    {
+      "id": "7e347b67-fa05-42f7-8da5-4ace5a147d1b",
+      "name": "빙결 균열",
+      "terrain": "지진",
+      "size": 3,
+      "duration": 3
+    }
+  ]
 }
